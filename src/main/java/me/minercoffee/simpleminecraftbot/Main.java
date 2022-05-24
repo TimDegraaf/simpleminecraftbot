@@ -23,6 +23,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,9 +33,11 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -139,6 +143,20 @@ public final class Main extends BasePlugin {
         staffchannel.sendMessageEmbeds(builder.build()).queue();
     }
 
+    public void sendOfflineEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+        if (chatChannel == null) return;
+        EmbedBuilder builder = new EmbedBuilder()
+                .setAuthor(contentAuthorLine ? content : player.getName(),
+                        null,
+                        "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
+        builder.setColor(java.awt.Color.RED);
+        if (!contentAuthorLine) {
+            builder.setDescription(content);
+        }
+        LocalDate ld = LocalDate.now();
+        builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
+        chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
     public String convertTime(Long ms) {
         int seconds = (int) (ms / 1000) % 60;
         int minutes = (int) ((ms / (1000 * 60)) % 60);
@@ -166,7 +184,7 @@ public final class Main extends BasePlugin {
             }
             LocalDate ld = LocalDate.now();
             builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
-            BotOnlineChannel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
+            chatChannel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
         }
     }
 
@@ -174,7 +192,7 @@ public final class Main extends BasePlugin {
         if (chatChannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
-                contentInAuthorLine ? content : player.getDisplayName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+                contentInAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
         );
         builder.setColor(java.awt.Color.GREEN);
 
@@ -199,6 +217,26 @@ public final class Main extends BasePlugin {
 
 
     public class SpigotListener implements Listener {
+        @SuppressWarnings("deprecation")
+        @EventHandler
+        public void onServerCommand(ServerCommandEvent event, Player p) {
+            FileConfiguration spigot = YamlConfiguration.loadConfiguration(new File(Bukkit.getServer().getWorldContainer(), "spigot.yml"));
+
+            if (event.getCommand().equalsIgnoreCase("reload")) {
+                // Restarts server if server is set up for it.
+                if (spigot.getBoolean("settings.restart-on-crash")) {
+                    sendOfflineEmbed((Bukkit.getOfflinePlayer("MinerCoffee97")), "Bot off", true, Color.RED);
+                    Bukkit.getLogger().severe("Restarting server due to reload command!");
+                    event.setCommand("restart");
+                } else {
+                    // Call to server shutdown on disable.
+                    // Won't hurt if server already disables itself, but will prevent plugin unload/reload.
+                    sendOfflineEmbed((Bukkit.getOfflinePlayer("MinerCoffee97")), "Bot off", true, Color.RED);
+                    Bukkit.getLogger().severe("Stopping server due to reload command!");
+                    Bukkit.shutdown();
+                }
+            }
+        }
         @EventHandler
         public void onChat(AsyncPlayerChatEvent e) {
             Player player = e.getPlayer();
