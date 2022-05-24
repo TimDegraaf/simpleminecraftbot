@@ -1,0 +1,10 @@
+name: SimpleMinecraftBot
+version: '${project.version}'
+main: me.minercoffee.simpleminecraftbot.Main
+api-version: 1.18
+load: STARTUP
+commands:
+  staffcheck:
+    description: Checks the time of the staff member.
+  smreload:
+    description:  reloads the configs
