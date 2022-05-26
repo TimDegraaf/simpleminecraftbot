@@ -79,6 +79,10 @@
             <name>m2-dv8tion</name>
             <url>https://m2.dv8tion.net/releases</url>
         </repository>
+        <repository>
+            <id>jeff-media-public</id>
+            <url>https://hub.jeff-media.com/nexus/repository/jeff-media-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -92,6 +96,12 @@
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
             <version>5.0.0-alpha.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jeff_media</groupId>
+            <artifactId>SpigotUpdateChecker</artifactId>
+            <version>2.2.0</version> <!-- Check on GitHub for the latest version -->
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

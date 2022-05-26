@@ -8,6 +8,8 @@ import me.minercoffee.simpleminecraftbot.stafflog.cmd.Discordhelp;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.ticket.commands;
+import me.minercoffee.simpleminecraftbot.utils.UpdateCheckCommand;
+import me.minercoffee.simpleminecraftbot.utils.UpdateCheckListener;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -23,8 +25,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,11 +33,9 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
-import java.io.File;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -53,8 +51,8 @@ public final class Main extends BasePlugin {
     public final Map<String, String> advancementToDisplayMap = new HashMap<>();
     public static JDA jda;
     private TextChannel chatChannel;
+    private TextChannel onlinechanel;
 
-    private TextChannel BotOnlineChannel;
     private TextChannel staffchannel;
 
     private static final String PREFIX = "!";
@@ -77,30 +75,32 @@ public final class Main extends BasePlugin {
             return;
         }
         String BotChannelID = getConfig().getString("BotChannelID");
-        if (BotChannelID != null) {
-            BotOnlineChannel = jda.getTextChannelById(BotChannelID);
-        }
         String chatChannelId = getConfig().getString("chat-channel-id");
         if (chatChannelId != null) {
             chatChannel = jda.getTextChannelById(chatChannelId);
         }
         if (BotChannelID != null) {
-            this.BotOnlineChannel = jda.getTextChannelById(BotChannelID);
+            this.onlinechanel = jda.getTextChannelById(BotChannelID);
+        }
+        String onlinechanelid = getConfig().getString("onlinechannel");
+        if(onlinechanelid != null){
+            onlinechanel = jda.getTextChannelById(onlinechanelid);
         }
         jda.addEventListener(new DiscordCommandCheckLegacy(), new Discordhelp(), new DiscordBotPingEvent());
-        getCommand("staffcheck").setExecutor(new CommandCheck(this));
+        Objects.requireNonNull(getCommand("staffcheck")).setExecutor(new CommandCheck(this));
         instance.registerListeners(new PlayerLogListener(this));
+        getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
         new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 3600L * 20L);
-        new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 120L * 20L);
+        new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60L * 20L);
         new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 86400L * 20L);
         jda.addEventListener(new Clear(this));
         jda.addEventListener(new ButtonListener(this));
         jda.addEventListener(new commands());
         jda.addEventListener(new DiscordListener());
         getServer().getPluginManager().registerEvents(new SpigotListener(), this);
+        Objects.requireNonNull(this.getCommand("updatechecker")).setExecutor(new UpdateCheckCommand());
         new ReloadCommand(this);
-        this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Bot online", true, Color.GREEN);
-
+        this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
         //advancement config getting the names.
         ConfigurationSection advancementMap = getConfig().getConfigurationSection("advancementMap");
         if (advancementMap != null){
@@ -112,11 +112,24 @@ public final class Main extends BasePlugin {
         if (staffchannelid != null) {
             staffchannel = jda.getTextChannelById(staffchannelid);
         }
-        sendstaffEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Bot online", true, Color.RED);
+        sendstaffEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
+    }
+    private void purgeMessages(TextChannel channel) {
+        try {
+            MessageHistory history = new MessageHistory(channel);
+            List<Message> msg;
+            msg = history.retrievePast(2).complete();
+            channel.deleteMessages(msg).queue();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onDisable() {
+        (new PlayerLogListener(this)).saveAllPlayers();
+        BotisOfflineembed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is offline.", true, Color.RED);
         if (jda != null) {
             try {
                 Thread.sleep(2000);
@@ -143,8 +156,8 @@ public final class Main extends BasePlugin {
         staffchannel.sendMessageEmbeds(builder.build()).queue();
     }
 
-    public void sendOfflineEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
-        if (chatChannel == null) return;
+    public void BotisOfflineembed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+        if (onlinechanel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(contentAuthorLine ? content : player.getName(),
                         null,
@@ -155,7 +168,8 @@ public final class Main extends BasePlugin {
         }
         LocalDate ld = LocalDate.now();
         builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
-        chatChannel.sendMessageEmbeds(builder.build()).queue();
+        onlinechanel.sendMessageEmbeds(builder.build()).queue();
+        purgeMessages(onlinechanel);
     }
     public String convertTime(Long ms) {
         int seconds = (int) (ms / 1000) % 60;
@@ -176,7 +190,7 @@ public final class Main extends BasePlugin {
     }
 
     public void BotSendEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
-        if (BotOnlineChannel != null) {
+        if (onlinechanel != null) {
             EmbedBuilder builder = (new EmbedBuilder()).setAuthor(contentAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
             builder.setColor(java.awt.Color.GREEN);
             if (!contentAuthorLine) {
@@ -184,32 +198,46 @@ public final class Main extends BasePlugin {
             }
             LocalDate ld = LocalDate.now();
             builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
-            chatChannel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
+            onlinechanel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
+            purgeMessages(onlinechanel);
         }
     }
 
-    private void sendMessage(Player player, String content, Boolean contentInAuthorLine, Color color) {
+    private void sendMessage(Player player, String content, Color color) {
         if (chatChannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
-                contentInAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+                content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
         );
         builder.setColor(java.awt.Color.GREEN);
 
-        if (!contentInAuthorLine) {
+        if (!(Boolean) true) {
             builder.setDescription(content);
         }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
-    private void sendMsg(Player player, String content, Boolean contentInAuthorLine, Color color) {
+    private void sendMsg(Player player, String content) {
         if (chatChannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
-                contentInAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1" //can be plater.getName or player.getDisplayName
+                player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1" //can be plater.getName or player.getDisplayName
         );
         builder.setColor(java.awt.Color.GREEN);
 
-        if (!contentInAuthorLine) {
+        if (!(Boolean) false) {
+            builder.setDescription(content);
+        }
+        chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
+    private void sendoffmsg(Player player, String content, Color color) {
+        if (chatChannel == null) return;
+
+        EmbedBuilder builder = new EmbedBuilder().setAuthor(
+                content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+        );
+        builder.setColor(java.awt.Color.RED);
+
+        if (!(Boolean) true) {
             builder.setDescription(content);
         }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
@@ -217,46 +245,26 @@ public final class Main extends BasePlugin {
 
 
     public class SpigotListener implements Listener {
-        @SuppressWarnings("deprecation")
-        @EventHandler
-        public void onServerCommand(ServerCommandEvent event, Player p) {
-            FileConfiguration spigot = YamlConfiguration.loadConfiguration(new File(Bukkit.getServer().getWorldContainer(), "spigot.yml"));
-
-            if (event.getCommand().equalsIgnoreCase("reload")) {
-                // Restarts server if server is set up for it.
-                if (spigot.getBoolean("settings.restart-on-crash")) {
-                    sendOfflineEmbed((Bukkit.getOfflinePlayer("MinerCoffee97")), "Bot off", true, Color.RED);
-                    Bukkit.getLogger().severe("Restarting server due to reload command!");
-                    event.setCommand("restart");
-                } else {
-                    // Call to server shutdown on disable.
-                    // Won't hurt if server already disables itself, but will prevent plugin unload/reload.
-                    sendOfflineEmbed((Bukkit.getOfflinePlayer("MinerCoffee97")), "Bot off", true, Color.RED);
-                    Bukkit.getLogger().severe("Stopping server due to reload command!");
-                    Bukkit.shutdown();
-                }
-            }
-        }
         @EventHandler
         public void onChat(AsyncPlayerChatEvent e) {
             Player player = e.getPlayer();
-            sendMsg(player, e.getMessage(), false, Color.GRAY);
+            sendMsg(player, e.getMessage());
         }
         @EventHandler
         public void onJoin(PlayerJoinEvent e){
             Player player = e.getPlayer();
-            sendMessage(player, e.getPlayer().getName() + " joined the game.", true, Color.GREEN);
+            sendMessage(player, e.getPlayer().getName() + " joined the game.", Color.GREEN);
         }
         @EventHandler
         public void onQuit(PlayerQuitEvent e){
             Player player = e.getPlayer();
-            sendMessage(e.getPlayer(), player.getName() + " left the game.", true, Color.RED);
+            sendoffmsg(e.getPlayer(), player.getName() + " left the game.", Color.RED);
         }
         @EventHandler
         public void onDeath(PlayerDeathEvent e){
             Player p = e.getEntity();
             String deathMessage = e.getDeathMessage() == null ? p.getName() + " died." : e.getDeathMessage();
-            sendMessage(p, deathMessage, true, Color.GRAY);
+            sendMessage(p, deathMessage, Color.GRAY);
         }
         @EventHandler
         public void onAdvancement(PlayerAdvancementDoneEvent e){
@@ -264,7 +272,7 @@ public final class Main extends BasePlugin {
             String advancementKey  = e.getAdvancement().getKey().getKey();
             String display = advancementToDisplayMap.get(advancementKey);
             if(display == null ) return;
-            sendMessage(player, player.getName() + " has made the advancement ["+ display + "]", true, Color.TEAL);
+            sendMessage(player, player.getName() + " has made the advancement ["+ display + "]", Color.TEAL);
         }
     }
     public class ReloadCommand implements CommandExecutor {

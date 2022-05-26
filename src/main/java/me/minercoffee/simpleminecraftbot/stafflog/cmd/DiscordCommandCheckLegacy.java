@@ -15,27 +15,32 @@ public class DiscordCommandCheckLegacy extends ListenerAdapter {
     @SuppressWarnings("deprecation")
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        List<String> ignored = Arrays.asList("462296411141177364", "918054245184450600", "918054242026131467");
-        if (ignored.contains(e.getMessage().getId())) return;
-        if (e.getAuthor().isBot()) return;
+        try {
+
+            List<String> ignored = Arrays.asList("462296411141177364", "918054245184450600", "918054242026131467");
+            if (ignored.contains(e.getMessage().getId())) return;
+            if (e.getAuthor().isBot()) return;
 
 
-        List<String> command = Arrays.asList(e.getMessage().getContentRaw().split(" "));
-        if (!command.get(0).equalsIgnoreCase("-staffcheck")) return;
+            List<String> command = Arrays.asList(e.getMessage().getContentRaw().split(" "));
+            if (!command.get(0).equalsIgnoreCase("-staffcheck")) return;
 
 
-        List<String> allowed = Arrays.asList("462296411141177364", "321737250524102677", "117396465017421827"); //checking role id
-        if (!allowed.contains(e.getAuthor().getId())) {
-            e.getChannel().sendMessage("<@" + e.getAuthor().getId() + ">, you cannot issue this command!").queue();
-            return;
+            List<String> allowed = Arrays.asList("462296411141177364", "321737250524102677", "117396465017421827"); //checking role id
+            if (!allowed.contains(e.getAuthor().getId())) {
+                e.getChannel().sendMessage("<@" + e.getAuthor().getId() + ">, you cannot issue this command!").queue();
+                return;
+            }
+
+
+            String name = command.get(1);
+            OfflinePlayer p = Bukkit.getOfflinePlayer(name);
+            FileConfiguration config = Main.getInstance().getConfig();
+            String time = Main.getInstance().convertTime(config.getLong(String.valueOf(p.getUniqueId())));
+
+            e.getChannel().sendMessage("**" + p.getName() + "** has **" + time + "** logged this week.").queue();
+        } catch (Exception ex){
+            ex.printStackTrace();
         }
-
-
-        String name = command.get(1);
-        OfflinePlayer p = Bukkit.getOfflinePlayer(name);
-        FileConfiguration config = Main.getInstance().getConfig();
-        String time = Main.getInstance().convertTime(config.getLong(String.valueOf(p.getUniqueId())));
-
-        e.getChannel().sendMessage("**" + p.getName() + "** has **" + time + "** logged this week.").queue();
     }
 }

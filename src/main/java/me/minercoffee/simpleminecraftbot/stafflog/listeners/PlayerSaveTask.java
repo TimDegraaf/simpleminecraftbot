@@ -4,6 +4,8 @@ import me.minercoffee.simpleminecraftbot.Main;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerSaveTask extends BukkitRunnable {
+    public PlayerSaveTask(){
+    }
     @Override
     public void run() {
         new PlayerLogListener(Main.getInstance()).saveAllPlayers();
