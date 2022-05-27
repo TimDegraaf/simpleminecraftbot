@@ -118,7 +118,7 @@ public final class Main extends BasePlugin {
         try {
             MessageHistory history = new MessageHistory(channel);
             List<Message> msg;
-            msg = history.retrievePast(2).complete();
+            msg = history.retrievePast(3).complete();
             channel.deleteMessages(msg).queue();
         } catch (Exception e) {
             e.printStackTrace();
@@ -166,8 +166,6 @@ public final class Main extends BasePlugin {
         if (!contentAuthorLine) {
             builder.setDescription(content);
         }
-        LocalDate ld = LocalDate.now();
-        builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
         onlinechanel.sendMessageEmbeds(builder.build()).queue();
         purgeMessages(onlinechanel);
     }
@@ -196,20 +194,44 @@ public final class Main extends BasePlugin {
             if (!contentAuthorLine) {
                 builder.setDescription(content);
             }
-            LocalDate ld = LocalDate.now();
-            builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
             onlinechanel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
             purgeMessages(onlinechanel);
         }
     }
 
-    private void sendMessage(Player player, String content, Color color) {
+    private void sendMessage(Player player, String content) {
         if (chatChannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
                 content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
         );
         builder.setColor(java.awt.Color.GREEN);
+
+        if (!(Boolean) true) {
+            builder.setDescription(content);
+        }
+        chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
+    private void sendadvancementmsg(Player player, String content) {
+        if (chatChannel == null) return;
+
+        EmbedBuilder builder = new EmbedBuilder().setAuthor(
+                content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+        );
+        builder.setColor(java.awt.Color.CYAN);
+
+        if (!(Boolean) true) {
+            builder.setDescription(content);
+        }
+        chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
+    private void senddeathmsg(Player player, String content) {
+        if (chatChannel == null) return;
+
+        EmbedBuilder builder = new EmbedBuilder().setAuthor(
+                content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+        );
+        builder.setColor(java.awt.Color.GRAY);
 
         if (!(Boolean) true) {
             builder.setDescription(content);
@@ -229,7 +251,7 @@ public final class Main extends BasePlugin {
         }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
-    private void sendoffmsg(Player player, String content, Color color) {
+    private void sendoffmsg(Player player, String content) {
         if (chatChannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
@@ -253,18 +275,18 @@ public final class Main extends BasePlugin {
         @EventHandler
         public void onJoin(PlayerJoinEvent e){
             Player player = e.getPlayer();
-            sendMessage(player, e.getPlayer().getName() + " joined the game.", Color.GREEN);
+            sendMessage(player, e.getPlayer().getName() + " joined the game.");
         }
         @EventHandler
         public void onQuit(PlayerQuitEvent e){
             Player player = e.getPlayer();
-            sendoffmsg(e.getPlayer(), player.getName() + " left the game.", Color.RED);
+            sendoffmsg(e.getPlayer(), player.getName() + " left the game.");
         }
         @EventHandler
         public void onDeath(PlayerDeathEvent e){
             Player p = e.getEntity();
             String deathMessage = e.getDeathMessage() == null ? p.getName() + " died." : e.getDeathMessage();
-            sendMessage(p, deathMessage, Color.GRAY);
+            senddeathmsg(p, deathMessage);
         }
         @EventHandler
         public void onAdvancement(PlayerAdvancementDoneEvent e){
@@ -272,7 +294,7 @@ public final class Main extends BasePlugin {
             String advancementKey  = e.getAdvancement().getKey().getKey();
             String display = advancementToDisplayMap.get(advancementKey);
             if(display == null ) return;
-            sendMessage(player, player.getName() + " has made the advancement ["+ display + "]", Color.TEAL);
+            sendadvancementmsg(player, player.getName() + " has made the advancement ["+ display + "]");
         }
     }
     public class ReloadCommand implements CommandExecutor {
