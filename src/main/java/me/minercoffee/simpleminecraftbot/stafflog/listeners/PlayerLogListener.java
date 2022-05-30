@@ -29,6 +29,7 @@ public class PlayerLogListener implements Listener {
         Player p = e.getPlayer();
         if (!p.hasPermission("illusive.staff")) return;
         clockIn(p.getUniqueId());
+        currentTime(p);
     }
 
     @EventHandler
@@ -47,6 +48,20 @@ public class PlayerLogListener implements Listener {
         map.put(p, System.currentTimeMillis());
         System.out.print("clocked in " + p);
     }
+    private void currentTime(Player p){
+        long logoutTime = System.currentTimeMillis();
+        long loginTime = map.get(p.getUniqueId());
+        map.get(p.getUniqueId());
+
+        FileConfiguration config = Main.getInstance().getConfig();
+        Long timeToday = logoutTime - loginTime;
+        Long timeFromConfig = getTimeFromConfig(p.getUniqueId());
+        Long toSet = timeToday + timeFromConfig;
+        config.set(String.valueOf(p.getUniqueId()), toSet);
+        Main.getInstance().saveConfig();
+
+        Main.getInstance().sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+    }
 
     private void clockOut(Player p) {
         long logoutTime = System.currentTimeMillis();
@@ -60,7 +75,7 @@ public class PlayerLogListener implements Listener {
         config.set(String.valueOf(p.getUniqueId()), toSet);
         Main.getInstance().saveConfig();
 
-        Main.getInstance().sendstaffEmbed(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        Main.getInstance().sendstaffEmbedoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
     }
 
     public void saveAllPlayers() {

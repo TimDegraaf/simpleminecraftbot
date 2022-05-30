@@ -112,13 +112,12 @@ public final class Main extends BasePlugin {
         if (staffchannelid != null) {
             staffchannel = jda.getTextChannelById(staffchannelid);
         }
-        sendstaffEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
     }
     private void purgeMessages(TextChannel channel) {
         try {
             MessageHistory history = new MessageHistory(channel);
             List<Message> msg;
-            msg = history.retrievePast(3).complete();
+            msg = history.retrievePast(2).complete();
             channel.deleteMessages(msg).queue();
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,7 +138,7 @@ public final class Main extends BasePlugin {
             jda.shutdownNow();
         }
     }
-    public void sendstaffEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+    public void sendstaffEmbedOnline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
         if (staffchannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder()
@@ -147,6 +146,38 @@ public final class Main extends BasePlugin {
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.GREEN);
+        if (!contentAuthorLine) {
+            builder.setDescription(content);
+        }
+        LocalDate ld = LocalDate.now();
+        builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
+
+        staffchannel.sendMessageEmbeds(builder.build()).queue();
+    }
+    public void sendstaffEmbedoffline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+        if (staffchannel == null) return;
+
+        EmbedBuilder builder = new EmbedBuilder()
+                .setAuthor(contentAuthorLine ? content : player.getName(),
+                        null,
+                        "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
+        builder.setColor(java.awt.Color.RED);
+        if (!contentAuthorLine) {
+            builder.setDescription(content);
+        }
+        LocalDate ld = LocalDate.now();
+        builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
+
+        staffchannel.sendMessageEmbeds(builder.build()).queue();
+    }
+    public void sendStaffCurrentTime(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+        if (staffchannel == null) return;
+
+        EmbedBuilder builder = new EmbedBuilder()
+                .setAuthor(contentAuthorLine ? content : player.getName(),
+                        null,
+                        "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
+        builder.setColor(java.awt.Color.orange);
         if (!contentAuthorLine) {
             builder.setDescription(content);
         }
@@ -244,11 +275,8 @@ public final class Main extends BasePlugin {
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
                 player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1" //can be plater.getName or player.getDisplayName
         );
-        builder.setColor(java.awt.Color.GREEN);
-
-        if (!(Boolean) false) {
-            builder.setDescription(content);
-        }
+        builder.setDescription(content);
+        builder.setColor(java.awt.Color.BLACK);
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
     private void sendoffmsg(Player player, String content) {
@@ -264,13 +292,34 @@ public final class Main extends BasePlugin {
         }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
+    private void SendFirstJoinmsg(Player player, String content){
+        if (chatChannel == null) return;
 
+        EmbedBuilder builder = new EmbedBuilder().setAuthor(
+                content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+        );
+        builder.setColor(java.awt.Color.ORANGE);
+
+        if (!(Boolean) true) {
+            builder.setDescription(content);
+        }
+        chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
 
     public class SpigotListener implements Listener {
         @EventHandler
+        public void onFirstJoin(PlayerJoinEvent e) {
+            Player player = e.getPlayer();
+            if (!player.hasPlayedBefore()) {
+                SendFirstJoinmsg(player, player.getName() + " has join the game for the first time!");
+            }
+        }
+        @EventHandler
         public void onChat(AsyncPlayerChatEvent e) {
             Player player = e.getPlayer();
-            sendMsg(player, e.getMessage());
+            String Chatmsg = e.getMessage();
+            sendMsg(player,Chatmsg);
+
         }
         @EventHandler
         public void onJoin(PlayerJoinEvent e){

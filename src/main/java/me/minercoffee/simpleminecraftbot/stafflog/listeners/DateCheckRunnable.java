@@ -9,7 +9,6 @@ import java.util.*;
 
 public class DateCheckRunnable extends BukkitRunnable {
     private final Main plugin;
-    private final List<String> toSend = new ArrayList<>();
 
     public DateCheckRunnable(Main plugin) {
         this.plugin = plugin;
@@ -28,7 +27,7 @@ public class DateCheckRunnable extends BukkitRunnable {
                 toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
             }
             System.out.println(toSend);
-            Main.getInstance().sendstaffEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+            Main.getInstance().sendstaffEmbedOnline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
 
             // clear the config
             for (String key : Main.getInstance().getConfig().getKeys(false)) {

@@ -8,7 +8,11 @@ public class PlayerSaveTask extends BukkitRunnable {
     }
     @Override
     public void run() {
-        new PlayerLogListener(Main.getInstance()).saveAllPlayers();
-        System.out.println("saved all players");
+        try {
+            new PlayerLogListener(Main.getInstance()).saveAllPlayers();
+            System.out.println("saved all players");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
