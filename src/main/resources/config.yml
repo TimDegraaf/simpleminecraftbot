@@ -1,4 +1,4 @@
-bot-token: ''
+bot-token: ""
 chat-channel-id: "966782706165882951"
 Command-channel: "966782672259129424"
 Staff-channel: "965844461772996628"
@@ -79,4 +79,3 @@ advancementMap:
   "husbandry/tactical_fishing": "Tactial Fishing"
   "husbandry/balanced_diet": "A Balanced Diet"
   "husbandry/obtain_netherite_hoe": "Serious Dedication"
-staffplaytimeuuid:

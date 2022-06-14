@@ -5,8 +5,8 @@ api-version: 1.18
 load: STARTUP
 commands:
   updatechecker:
-    description: s
+    usage: /<command>
   staffcheck:
-    description: Checks the time of the staff member.
-  smreload:
-    description:  reloads the configs
+    usage: /<command>
+  sbreload:
+    usage: /<command>

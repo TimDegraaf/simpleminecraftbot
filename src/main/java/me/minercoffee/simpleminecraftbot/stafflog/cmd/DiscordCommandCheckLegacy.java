@@ -10,8 +10,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
-
 public class DiscordCommandCheckLegacy extends ListenerAdapter {
+    Main plugin;
+    public DiscordCommandCheckLegacy(Main plugin){
+        this.plugin = plugin;
+    }
     @SuppressWarnings("deprecation")
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
@@ -35,7 +38,7 @@ public class DiscordCommandCheckLegacy extends ListenerAdapter {
 
             String name = command.get(1);
             OfflinePlayer p = Bukkit.getOfflinePlayer(name);
-            FileConfiguration config = Main.getInstance().getConfig();
+            FileConfiguration config = plugin.getConfig();
             String time = Main.getInstance().convertTime(config.getLong(String.valueOf(p.getUniqueId())));
 
             e.getChannel().sendMessage("**" + p.getName() + "** has **" + time + "** logged this week.").queue();

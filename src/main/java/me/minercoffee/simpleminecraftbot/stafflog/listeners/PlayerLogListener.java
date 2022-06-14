@@ -91,6 +91,6 @@ public class PlayerLogListener implements Listener {
                 clockIn(p);
             }
         }
-        System.out.println("saved players");
+        System.out.println("saved all staff playtime");
     }
 }

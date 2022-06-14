@@ -10,7 +10,7 @@ public class PlayerSaveTask extends BukkitRunnable {
     public void run() {
         try {
             new PlayerLogListener(Main.getInstance()).saveAllPlayers();
-            System.out.println("saved all players");
+            System.out.println("saved staff playtime");
         } catch (Exception e){
             e.printStackTrace();
         }

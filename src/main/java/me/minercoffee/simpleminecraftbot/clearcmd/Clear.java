@@ -42,7 +42,7 @@ public class Clear extends ListenerAdapter {
                         sendErrorMessage(e.getTextChannel(), e.getMember());
                     } else {
                         e.getMessage().delete().queue();
-                        TextChannel target = e.getMessage().getMentionedChannels().get(0);
+                        TextChannel target = (TextChannel) e.getMessage().getMentions().getChannels().get(0);
                         purgeMessages(target, Integer.parseInt(args[2]));
                         if (args.length > 3) {
                             StringBuilder reason = new StringBuilder();
@@ -72,6 +72,7 @@ public class Clear extends ListenerAdapter {
             channel.sendMessageEmbeds(builder.build()).complete().delete().queueAfter(15, TimeUnit.SECONDS);
         } catch (Exception e) {
             e.printStackTrace();
+            e.getCause();
         }
     }
 
@@ -97,13 +98,13 @@ public class Clear extends ListenerAdapter {
 
     private void purgeMessages(TextChannel channel, int num) {
         try {
-
             MessageHistory history = new MessageHistory(channel);
             List<Message> msg;
             msg = history.retrievePast(num).complete();
             channel.deleteMessages(msg).queue();
         } catch (Exception e) {
             e.printStackTrace();
+            e.getCause();
         }
     }
 }

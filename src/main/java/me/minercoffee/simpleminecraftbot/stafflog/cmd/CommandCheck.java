@@ -1,7 +1,7 @@
 package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
+import games.negative.framework.message.Message;
 import me.minercoffee.simpleminecraftbot.Main;
-import me.minercoffee.simpleminecraftbot.framework.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;

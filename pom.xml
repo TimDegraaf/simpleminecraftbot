@@ -83,6 +83,10 @@
             <id>jeff-media-public</id>
             <url>https://hub.jeff-media.com/nexus/repository/jeff-media-public/</url>
         </repository>
+        <repository>
+            <id>negative-games</id>
+            <url>https://repo.negative.games/repository/negative-games/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -95,12 +99,18 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-alpha.11</version>
+            <version>5.0.0-alpha.12</version>
         </dependency>
         <dependency>
             <groupId>com.jeff_media</groupId>
             <artifactId>SpigotUpdateChecker</artifactId>
             <version>2.2.0</version> <!-- Check on GitHub for the latest version -->
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>games.negative.framework</groupId>
+            <artifactId>Framework</artifactId>
+            <version>2.1.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
