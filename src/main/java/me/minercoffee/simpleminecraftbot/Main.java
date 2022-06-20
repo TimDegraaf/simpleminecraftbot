@@ -4,9 +4,11 @@ import me.minercoffee.simpleminecraftbot.clearcmd.Clear;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.CommandCheck;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.DiscordCommandCheckLegacy;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.Discordhelp;
+import me.minercoffee.simpleminecraftbot.stafflog.cmd.OnlineStaff;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.ticket.commands;
+import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import me.minercoffee.simpleminecraftbot.utils.UpdateCheckCommand;
 import me.minercoffee.simpleminecraftbot.utils.UpdateCheckListener;
 import me.minercoffee.simpleminecraftbot.utils.reloadcmd;
@@ -44,6 +46,7 @@ public final class Main extends JavaPlugin {
 
     public HashMap<UUID, Long> map = new HashMap<>();
 
+    public DataManager data;
     public static void setInstance(Main instance) {
         Main.instance = instance;
     }
@@ -66,6 +69,7 @@ public final class Main extends JavaPlugin {
         setInstance(this);
         saveDefaultConfig();
         String botToken = getConfig().getString("bot-token");
+        if (botToken == null) return;
         try {
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE).build().awaitReady();
         } catch (InterruptedException | LoginException e) {
@@ -84,7 +88,7 @@ public final class Main extends JavaPlugin {
             this.onlinechanel = jda.getTextChannelById(BotChannelID);
         }
         String onlinechanelid = getConfig().getString("onlinechannel");
-        if(onlinechanelid != null){
+        if (onlinechanelid != null) {
             onlinechanel = jda.getTextChannelById(onlinechanelid);
         }
         jda.addEventListener(new DiscordCommandCheckLegacy(this), new Discordhelp(), new DiscordBotPingEvent());
@@ -98,15 +102,17 @@ public final class Main extends JavaPlugin {
         jda.addEventListener(new ButtonListener(this));
         jda.addEventListener(new commands());
         jda.addEventListener(new DiscordListener());
+        jda.addEventListener(new OnlineStaff());
         new reloadcmd(this);
         getServer().getPluginManager().registerEvents(new SpigotListener(), this);
         getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
         getCommand("sbreload").setExecutor(new reloadcmd(this));
+        this.data = new DataManager(this);
         this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
         //advancement config getting the names.
         ConfigurationSection advancementMap = getConfig().getConfigurationSection("advancementMap");
-        if (advancementMap != null){
-            for (String key : advancementMap.getKeys(false)){
+        if (advancementMap != null) {
+            for (String key : advancementMap.getKeys(false)) {
                 advancementToDisplayMap.put(key, advancementMap.getString(key));
             }
         }
@@ -115,17 +121,17 @@ public final class Main extends JavaPlugin {
             staffchannel = jda.getTextChannelById(staffchannelid);
         }
     }
-    private void purgeMessages(TextChannel channel) {
-        try {
-            MessageHistory history = new MessageHistory(channel);
-            List<Message> msg;
-            msg = history.retrievePast(1).complete();
-            channel.deleteMessages(msg).queue();
-        } catch (Exception e) {
-            e.printStackTrace();
-            e.getCause();
+        private void purgeMessages (TextChannel channel){
+            try {
+                MessageHistory history = new MessageHistory(channel);
+                List<Message> msg;
+                msg = history.retrievePast(1).complete();
+                channel.deleteMessages(msg).queue();
+            } catch (Exception e) {
+                e.printStackTrace();
+                e.getCause();
+            }
         }
-    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -141,7 +147,10 @@ public final class Main extends JavaPlugin {
             jda.shutdownNow();
         }
     }
-    public void sendstaffEmbedOnline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+    public void embed(){
+
+    }
+    public void sendstaffonline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
         if (staffchannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder()
@@ -157,7 +166,7 @@ public final class Main extends JavaPlugin {
 
         staffchannel.sendMessageEmbeds(builder.build()).queue();
     }
-    public void sendstaffEmbedoffline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
+    public void senddtaffoffline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
         if (staffchannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder()

@@ -11,11 +11,13 @@ import java.util.List;
 public class DiscordBotPingEvent extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent e) {
-        if (Main.getInstance().checkMemberRoles(e.getMember(), "staff") == null) return;
-        Message message = e.getMessage();
-        List<User> users = message.getMentions().getUsers();
-        if (users.contains(e.getJDA().getSelfUser())) {
-            e.getMessage().reply("Use `-help` to get a list of commands.").queue();
+        if (e.getMember() != null) {
+            if (Main.getInstance().checkMemberRoles(e.getMember(), "staff") == null) return;
+            Message message = e.getMessage();
+            List<User> users = message.getMentions().getUsers();
+            if (users.contains(e.getJDA().getSelfUser())) {
+                e.getMessage().reply("Use `-help` to get a list of commands.").queue();
+            }
         }
     }
 }

@@ -21,6 +21,7 @@ public class PlayerLogListener implements Listener {
     public PlayerLogListener(Main plugin) {
         this.plugin = plugin;
         this.map = plugin.getMap();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
 
@@ -45,14 +46,19 @@ public class PlayerLogListener implements Listener {
     }
 
     private void clockIn(UUID p) {
+        try {
         map.put(p, System.currentTimeMillis());
         System.out.print("clocked in " + p);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
+
     private void currentTime(Player p){
+        try {
         long logoutTime = System.currentTimeMillis();
         long loginTime = map.get(p.getUniqueId());
         map.get(p.getUniqueId());
-
         FileConfiguration config = Main.getInstance().getConfig();
         Long timeToday = logoutTime - loginTime;
         Long timeFromConfig = getTimeFromConfig(p.getUniqueId());
@@ -61,21 +67,27 @@ public class PlayerLogListener implements Listener {
         Main.getInstance().saveConfig();
 
         Main.getInstance().sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+    } catch (Exception e){
+        e.printStackTrace();
     }
+}
 
     private void clockOut(Player p) {
-        long logoutTime = System.currentTimeMillis();
-        long loginTime = map.get(p.getUniqueId());
-        map.remove(p.getUniqueId());
+        try {
+            long logoutTime = System.currentTimeMillis();
+            long loginTime = map.get(p.getUniqueId());
+            map.remove(p.getUniqueId());
+            FileConfiguration config = Main.getInstance().getConfig();
+            Long timeToday = logoutTime - loginTime;
+            Long timeFromConfig = getTimeFromConfig(p.getUniqueId());
+            Long toSet = timeToday + timeFromConfig;
+            config.set(String.valueOf(p.getUniqueId()), toSet);
+            Main.getInstance().saveConfig();
 
-        FileConfiguration config = Main.getInstance().getConfig();
-        Long timeToday = logoutTime - loginTime;
-        Long timeFromConfig = getTimeFromConfig(p.getUniqueId());
-        Long toSet = timeToday + timeFromConfig;
-        config.set(String.valueOf(p.getUniqueId()), toSet);
-        Main.getInstance().saveConfig();
-
-        Main.getInstance().sendstaffEmbedoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+            Main.getInstance().senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void saveAllPlayers() {

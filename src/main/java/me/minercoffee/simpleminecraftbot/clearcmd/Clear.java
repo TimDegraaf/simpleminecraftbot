@@ -31,11 +31,13 @@ public class Clear extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         try {
             String[] args = e.getMessage().getContentRaw().split(" ");
+            if (e.getMember() != null) return;
             String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
             String ClearChannelID = plugin.getConfig().getString("Command-channel");
             if (ClearChannelID != null) {
                 ClearChannel = jda.getTextChannelById(ClearChannelID);
             }
+            if (roles != null) return;
             if (roles.contains("staff") || roles.contains("Owner")) {
                 if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
                     if (args.length <= 2) {

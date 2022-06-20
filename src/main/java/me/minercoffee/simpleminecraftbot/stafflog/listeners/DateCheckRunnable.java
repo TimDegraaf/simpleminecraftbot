@@ -27,7 +27,7 @@ public class DateCheckRunnable extends BukkitRunnable {
                 toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
             }
             System.out.println(toSend);
-            Main.getInstance().sendstaffEmbedOnline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+            Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
 
             // clear the config
             for (String key : Main.getInstance().getConfig().getKeys(false)) {

@@ -17,7 +17,7 @@ public class UpdateCheckCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, String[] args) {
 
         // Check for updates and send result to the one who entered the command
-        if(args.length==0) {
+        if(args.length == 0) {
             UpdateChecker.getInstance().checkNow(commandSender);
             return true;
         }
