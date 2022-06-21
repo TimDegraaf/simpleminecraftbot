@@ -66,6 +66,7 @@ public final class Main extends JavaPlugin {
     @SuppressWarnings("deprecation")
     @Override
     public void onEnable() {
+        super.onEnable();
         setInstance(this);
         saveDefaultConfig();
         String botToken = getConfig().getString("bot-token");
@@ -93,16 +94,16 @@ public final class Main extends JavaPlugin {
         }
         jda.addEventListener(new DiscordCommandCheckLegacy(this), new Discordhelp(), new DiscordBotPingEvent());
         getCommand("staffcheck").setExecutor(new CommandCheck(this));
-        new PlayerLogListener(this);
+        getServer().getPluginManager().registerEvents( new PlayerLogListener(this), this);
         getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
         new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 3600L * 20L);
-        new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60L * 20L);
+        new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 120L * 20L);
         new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 86400L * 20L);
         jda.addEventListener(new Clear(this));
         jda.addEventListener(new ButtonListener(this));
         jda.addEventListener(new commands());
         jda.addEventListener(new DiscordListener());
-        jda.addEventListener(new OnlineStaff());
+        jda.addEventListener(new OnlineStaff(this));
         new reloadcmd(this);
         getServer().getPluginManager().registerEvents(new SpigotListener(), this);
         getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
@@ -125,7 +126,7 @@ public final class Main extends JavaPlugin {
             try {
                 MessageHistory history = new MessageHistory(channel);
                 List<Message> msg;
-                msg = history.retrievePast(1).complete();
+                msg = history.retrievePast(2).complete();
                 channel.deleteMessages(msg).queue();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -146,9 +147,6 @@ public final class Main extends JavaPlugin {
             }
             jda.shutdownNow();
         }
-    }
-    public void embed(){
-
     }
     public void sendstaffonline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
         if (staffchannel == null) return;

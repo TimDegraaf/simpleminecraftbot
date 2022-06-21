@@ -21,7 +21,6 @@ public class PlayerLogListener implements Listener {
     public PlayerLogListener(Main plugin) {
         this.plugin = plugin;
         this.map = plugin.getMap();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
@@ -29,6 +28,11 @@ public class PlayerLogListener implements Listener {
         Player p = e.getPlayer();
         if (!p.hasPermission("illusive.staff")) return;
         clockIn(p.getUniqueId());
+    }
+    @EventHandler
+    public void onStaffCurrentTime(PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        if (!p.hasPermission("illusive.staff")) return;
         currentTime(p);
     }
 
@@ -82,7 +86,6 @@ public class PlayerLogListener implements Listener {
             Long toSet = timeToday + timeFromConfig;
             config.set(String.valueOf(p.getUniqueId()), toSet);
             Main.getInstance().saveConfig();
-
             Main.getInstance().senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
         } catch (Exception e){
             e.printStackTrace();

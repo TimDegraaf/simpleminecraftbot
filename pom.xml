@@ -43,7 +43,11 @@
                     <relocations>
                         <relocation>
                             <pattern>com.jeff_media.updatechecker</pattern>
-                            <shadedPattern>me.MinerCoffee.minerexpansion.updatechecker</shadedPattern>
+                            <shadedPattern>me.MinerCoffee.simpleminecraftbot.updatechecker</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>games.negative.framework</pattern>
+                            <shadedPattern>me.MinerCoffee.simpleminecraftbot.Main</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
