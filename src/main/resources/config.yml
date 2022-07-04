@@ -1,8 +1,3 @@
-bot-token: "token"
-chat-channel-id: "966782706165882951"
-Command-channel: "966782672259129424"
-Staff-channel: "965844461772996628"
-onlinechannel: "979621646870650960"
 advancementMap:
   "story/mine_stone": "Stone Age"
   "story/upgrade_tools": "Getting an Upgrade"

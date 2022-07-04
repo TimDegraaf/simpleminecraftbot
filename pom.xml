@@ -103,7 +103,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-alpha.12</version>
+            <version>5.0.0-alpha.13</version>
         </dependency>
         <dependency>
             <groupId>com.jeff_media</groupId>
@@ -114,7 +114,7 @@
         <dependency>
             <groupId>games.negative.framework</groupId>
             <artifactId>Framework</artifactId>
-            <version>2.1.0</version>
+            <version>2.2.0 </version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

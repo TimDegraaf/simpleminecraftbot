@@ -14,6 +14,7 @@ public class DailySummaryTask extends BukkitRunnable {
     public DailySummaryTask(Main plugin) {
         this.plugin = plugin;
     }
+
     @SuppressWarnings("deprecation")
     @Override
     public void run() {

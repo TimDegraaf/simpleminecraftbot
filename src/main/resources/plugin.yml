@@ -10,3 +10,7 @@ commands:
     usage: /<command>
   sbreload:
     usage: /<command>
+  staff:
+    usage: /<command>
+  staff-all:
+    usage: /<command>
