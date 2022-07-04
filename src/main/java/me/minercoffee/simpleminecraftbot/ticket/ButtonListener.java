@@ -27,7 +27,7 @@ public class ButtonListener extends ListenerAdapter {
     public void onButtonInteraction(@NotNull ButtonInteractionEvent e) {
         try {
             e.deferEdit().queue();
-            if (e.getButton().getId().equals("openTicket")) {
+            if (e.getButton().getId().contains("openTicket")) {
                 String role = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
                 if (!role.contains("Discord Helper") || !role.contains("staff") ) {
                     int min = 1;

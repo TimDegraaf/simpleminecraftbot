@@ -15,7 +15,7 @@ public class commands extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent e) {
         if (e.getMessage().getContentStripped().equalsIgnoreCase(Main.getPREFIX() + "setTicket")) {
             String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
-            if (roles.contains("Player")){
+            if (roles.contains("Player") | roles.contains("staff")){
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setColor(Color.GREEN);
                 embed.setTitle("Ticket Support");

@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static me.minercoffee.simpleminecraftbot.Main.jda;
+
 public class OnlineStaff extends ListenerAdapter {
 
     private final Main plugin;
@@ -27,10 +29,8 @@ public class OnlineStaff extends ListenerAdapter {
     @SuppressWarnings("deprecation")
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        String staffchannelid = plugin.getConfig().getString("Staff-channel");
-        if (staffchannelid != null) {
-            staffchannel = Main.jda.getTextChannelById(staffchannelid);
-        }
+        String staffplaytimechannel = "965844461772996628";
+        staffchannel = jda.getTextChannelById(staffplaytimechannel);
         String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
         if (roles.contains("staff") || roles.contains("Owner")) {
             if (e.getAuthor().isBot()) return;

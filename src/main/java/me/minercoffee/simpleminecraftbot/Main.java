@@ -1,6 +1,5 @@
 package me.minercoffee.simpleminecraftbot;
 
-import me.minercoffee.simpleminecraftbot.clearcmd.Clear;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.CommandCheck;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.DiscordCommandCheckLegacy;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.Discordhelp;
@@ -19,6 +18,7 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -34,8 +34,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-
-import javax.security.auth.login.LoginException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -55,9 +53,10 @@ public final class Main extends JavaPlugin {
     public final Map<String, String> advancementToDisplayMap = new HashMap<>();
     public static JDA jda;
     private TextChannel chatChannel;
-    private TextChannel onlinechanel;
 
     private TextChannel staffchannel;
+
+    private TextChannel ServerStatuschannel;
 
     private static final String PREFIX = "!";
     public static Main getInstance() {
@@ -69,76 +68,70 @@ public final class Main extends JavaPlugin {
         super.onEnable();
         setInstance(this);
         saveDefaultConfig();
-        String botToken = getConfig().getString("bot-token");
-        if (botToken == null) return;
+        String botToken = "Reacted";
         try {
-            jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE).build().awaitReady();
-        } catch (InterruptedException | LoginException e) {
+            jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
+                    .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
+            String chatChannelId = "966782706165882951";
+            chatChannel = jda.getTextChannelById(chatChannelId);
+            String ServerStatus = "979621646870650960";
+            ServerStatuschannel =jda.getTextChannelById(ServerStatus);
+            String staffplaytimechannel = "965844461772996628";
+            staffchannel = jda.getTextChannelById(staffplaytimechannel);
+            jda.addEventListener(new Discordhelp(), new DiscordBotPingEvent());
+            getCommand("staffcheck").setExecutor(new CommandCheck(this));
+            getCommand("staff").setExecutor(new PlayerLogListener(this));
+            getServer().getPluginManager().registerEvents(new PlayerLogListener(this), this);
+            getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
+            new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
+            new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 120L * 20L);
+            new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 86400L * 20L);
+           // jda.addEventListener(new Clear(this));
+            jda.addEventListener(new ButtonListener(this));
+            jda.addEventListener(new commands());
+            jda.addEventListener(new DiscordListener());
+            jda.addEventListener(new OnlineStaff(this));
+            jda.addEventListener(new DiscordCommandCheckLegacy());
+            new reloadcmd(this);
+            getServer().getPluginManager().registerEvents(new SpigotListener(), this);
+            getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
+            getCommand("staff-all").setExecutor(new staffonline());
+            getCommand("sbreload").setExecutor(new reloadcmd(this));
+            this.data = new DataManager(this);
+            this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
+            //advancement config getting the names.
+            ConfigurationSection advancementMap = getConfig().getConfigurationSection("advancementMap");
+            if (advancementMap != null) {
+                try {
+                    for (String key : advancementMap.getKeys(false)) {
+                        advancementToDisplayMap.put(key, advancementMap.getString(key));
+                    }
+                } catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        if (jda == null) {
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-        String BotChannelID = getConfig().getString("BotChannelID");
-        String chatChannelId = getConfig().getString("chat-channel-id");
-        if (chatChannelId != null) {
-            chatChannel = jda.getTextChannelById(chatChannelId);
-        }
-        if (BotChannelID != null) {
-            this.onlinechanel = jda.getTextChannelById(BotChannelID);
-        }
-        String onlinechanelid = getConfig().getString("onlinechannel");
-        if (onlinechanelid != null) {
-            onlinechanel = jda.getTextChannelById(onlinechanelid);
-        }
-        jda.addEventListener(new DiscordCommandCheckLegacy(this), new Discordhelp(), new DiscordBotPingEvent());
-        getCommand("staffcheck").setExecutor(new CommandCheck(this));
-        getServer().getPluginManager().registerEvents( new PlayerLogListener(this), this);
-        getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
-        new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 3600L * 20L);
-        new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 120L * 20L);
-        new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 86400L * 20L);
-        jda.addEventListener(new Clear(this));
-        jda.addEventListener(new ButtonListener(this));
-        jda.addEventListener(new commands());
-        jda.addEventListener(new DiscordListener());
-        jda.addEventListener(new OnlineStaff(this));
-        new reloadcmd(this);
-        getServer().getPluginManager().registerEvents(new SpigotListener(), this);
-        getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
-        getCommand("sbreload").setExecutor(new reloadcmd(this));
-        this.data = new DataManager(this);
-        this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
-        //advancement config getting the names.
-        ConfigurationSection advancementMap = getConfig().getConfigurationSection("advancementMap");
-        if (advancementMap != null) {
-            for (String key : advancementMap.getKeys(false)) {
-                advancementToDisplayMap.put(key, advancementMap.getString(key));
-            }
-        }
-        String staffchannelid = getConfig().getString("Staff-channel");
-        if (staffchannelid != null) {
-            staffchannel = jda.getTextChannelById(staffchannelid);
-        }
     }
-        private void purgeMessages (TextChannel channel){
-            try {
-                MessageHistory history = new MessageHistory(channel);
-                List<Message> msg;
-                msg = history.retrievePast(2).complete();
-                channel.deleteMessages(msg).queue();
-            } catch (Exception e) {
-                e.printStackTrace();
-                e.getCause();
-            }
+
+        private void purgeMessages (TextChannel channel) throws IllegalArgumentException {
+            MessageHistory history = new MessageHistory(channel);
+            List<Message> msg;
+            msg = history.retrievePast(2).complete();
+            channel.deleteMessages(msg).queue();
+
         }
 
     @SuppressWarnings("deprecation")
     @Override
     public void onDisable() {
         (new PlayerLogListener(this)).saveAllPlayers();
-        BotisOfflineembed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is offline.", true, Color.RED);
+        try {
+            BotisOfflineembed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is offline.", true, Color.RED);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         if (jda != null) {
             try {
                 Thread.sleep(2000);
@@ -166,7 +159,6 @@ public final class Main extends JavaPlugin {
     }
     public void senddtaffoffline(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
         if (staffchannel == null) return;
-
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(contentAuthorLine ? content : player.getName(),
                         null,
@@ -198,7 +190,7 @@ public final class Main extends JavaPlugin {
     }
 
     public void BotisOfflineembed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
-        if (onlinechanel == null) return;
+        if (ServerStatuschannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
                 .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true)
@@ -209,17 +201,15 @@ public final class Main extends JavaPlugin {
         if (!contentAuthorLine) {
             builder.setDescription(content);
         }
-        onlinechanel.sendMessageEmbeds(builder.build()).queue();
-        purgeMessages(onlinechanel);
+        ServerStatuschannel.sendMessageEmbeds(builder.build()).queue();
+        purgeMessages(ServerStatuschannel);
     }
     public String convertTime(Long ms) {
         int seconds = (int) (ms / 1000) % 60;
         int minutes = (int) ((ms / (1000 * 60)) % 60);
         int hours = (int) ((ms / (1000 * 60 * 60)) % 24);
 
-        return hours + " hours, " + minutes + " minutes and "
-                + seconds + " seconds";
-
+        return hours + " hours, " + minutes + " minutes and " + seconds + " seconds";
     }
 
     public Role checkMemberRoles(Member member, String name) {
@@ -231,7 +221,7 @@ public final class Main extends JavaPlugin {
     }
 
     public void BotSendEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color color) {
-        if (onlinechanel != null) {
+        if (ServerStatuschannel != null) {
             EmbedBuilder builder = (new EmbedBuilder()).setAuthor(contentAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1")
                     .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
                     .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true);
@@ -239,8 +229,8 @@ public final class Main extends JavaPlugin {
             if (!contentAuthorLine) {
                 builder.setDescription(content);
             }
-            onlinechanel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
-            purgeMessages(onlinechanel);
+            ServerStatuschannel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
+            purgeMessages(ServerStatuschannel);
         }
     }
 
@@ -282,7 +272,6 @@ public final class Main extends JavaPlugin {
                 player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1" //can be plater.getName or player.getDisplayName
         );
         builder.setDescription(content);
-        builder.setColor(java.awt.Color.BLACK);
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
     private void sendoffmsg(Player player, String content) {
@@ -320,7 +309,6 @@ public final class Main extends JavaPlugin {
             Player player = e.getPlayer();
             String Chatmsg = e.getMessage();
             sendMsg(player,Chatmsg);
-
         }
         @EventHandler
         public void onJoin(PlayerJoinEvent e){
