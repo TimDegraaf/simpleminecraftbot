@@ -5,29 +5,34 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.UUID;
+import java.util.*;
+
 
 public class DailySummaryTask extends BukkitRunnable {
 
     private final Main plugin;
 
+
     public DailySummaryTask(Main plugin) {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void run() {
-        try {
-            // discord stuff
-            StringBuilder toSend = new StringBuilder();
-            for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
-                toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+        Date date = new Date();
+        Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
+        calendar.setTime(date);   // assigns calendar to given date
+        if (calendar.get(Calendar.HOUR_OF_DAY) == 23) { //goes off at 11 pm pst
+            try {
+                StringBuilder toSend = new StringBuilder();
+                for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
+                    toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+                }
+                System.out.println(toSend);
+                Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            System.out.println(toSend);
-            Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
-        } catch (Exception e){
-            e.printStackTrace();
         }
     }
 }

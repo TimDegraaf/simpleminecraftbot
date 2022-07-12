@@ -32,6 +32,7 @@ public class PlayerLogListener implements Listener, CommandExecutor {
         Player p = e.getPlayer();
         if (!p.hasPermission("illusive.staff")) return;
         clockIn(p.getUniqueId());
+        p.playSound(p.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, 15, 5);
     }
 
     @EventHandler
@@ -46,6 +47,7 @@ public class PlayerLogListener implements Listener, CommandExecutor {
         Player p = e.getPlayer();
         if (!p.hasPermission("illusive.staff")) return;
         clockOut(p);
+        p.playSound(p.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, 15, 3);
     }
 
     private Long getTimeFromConfig(UUID p) {
@@ -62,8 +64,9 @@ public class PlayerLogListener implements Listener, CommandExecutor {
         }
     }
 
-    private void currentTime(Player p) {
+    public void currentTime(Player p) {
         try {
+            if (map != null) return;
             long logoutTime = System.currentTimeMillis();
             long loginTime = map.get(p.getUniqueId());
             map.get(p.getUniqueId());
@@ -73,7 +76,6 @@ public class PlayerLogListener implements Listener, CommandExecutor {
             Long toSet = timeToday + timeFromConfig;
             config.set(String.valueOf(p.getUniqueId()), toSet);
             Main.getInstance().saveConfig();
-
             Main.getInstance().sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,6 +84,7 @@ public class PlayerLogListener implements Listener, CommandExecutor {
 
     private void clockOut(Player p) {
         try {
+            if (map != null) return;
             long logoutTime = System.currentTimeMillis();
             long loginTime = map.get(p.getUniqueId());
             map.remove(p.getUniqueId());

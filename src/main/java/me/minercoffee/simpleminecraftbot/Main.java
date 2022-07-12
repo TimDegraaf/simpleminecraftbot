@@ -68,7 +68,8 @@ public final class Main extends JavaPlugin {
         super.onEnable();
         setInstance(this);
         saveDefaultConfig();
-        String botToken = "Reacted";
+        String botToken = "OTY2Nzg2NDU5OTM3OTY0MDYy.G5e81x.GLIiqQ5um7RmEuGVAUYZFhn49v0GGH54ge5bd8";
+
         try {
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
@@ -85,8 +86,8 @@ public final class Main extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
             new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 120L * 20L);
-            new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 86400L * 20L);
-           // jda.addEventListener(new Clear(this));
+            new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
+            // jda.addEventListener(new Clear(this));
             jda.addEventListener(new ButtonListener(this));
             jda.addEventListener(new commands());
             jda.addEventListener(new DiscordListener());
@@ -115,13 +116,16 @@ public final class Main extends JavaPlugin {
         }
     }
 
-        private void purgeMessages (TextChannel channel) throws IllegalArgumentException {
-            MessageHistory history = new MessageHistory(channel);
-            List<Message> msg;
+    private void purgeMessages (TextChannel channel) {
+        MessageHistory history = new MessageHistory(channel);
+        List<Message> msg;
+        try {
             msg = history.retrievePast(2).complete();
             channel.deleteMessages(msg).queue();
-
+        } catch (IllegalArgumentException e){
+            e.printStackTrace();
         }
+    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -260,18 +264,9 @@ public final class Main extends JavaPlugin {
         EmbedBuilder builder = new EmbedBuilder().setAuthor(
                 content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
         );
-        builder.setColor(java.awt.Color.GRAY);
+        builder.setColor(java.awt.Color.BLACK);
         builder.setDescription(content);
 
-        chatChannel.sendMessageEmbeds(builder.build()).queue();
-    }
-    private void sendMsg(Player player, String content) {
-        if (chatChannel == null) return;
-
-        EmbedBuilder builder = new EmbedBuilder().setAuthor(
-                player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1" //can be plater.getName or player.getDisplayName
-        );
-        builder.setDescription(content);
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
     private void sendoffmsg(Player player, String content) {
@@ -295,7 +290,16 @@ public final class Main extends JavaPlugin {
 
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
+    private void SendMsg(Player player, String content){
+        if (chatChannel == null) return;
 
+        EmbedBuilder builder = new EmbedBuilder().setAuthor(
+                content, null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1"
+        );
+        builder.setColor(java.awt.Color.gray);
+        builder.setDescription(content);
+        chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
     public class SpigotListener implements Listener {
         @EventHandler
         public void onFirstJoin(PlayerJoinEvent e) {
@@ -306,9 +310,9 @@ public final class Main extends JavaPlugin {
         }
         @EventHandler
         public void onChat(AsyncPlayerChatEvent e) {
-            Player player = e.getPlayer();
             String Chatmsg = e.getMessage();
-            sendMsg(player,Chatmsg);
+            Player player = e.getPlayer();
+            SendMsg(player, Chatmsg);
         }
         @EventHandler
         public void onJoin(PlayerJoinEvent e){
@@ -359,4 +363,3 @@ public final class Main extends JavaPlugin {
         return map;
     }
 }
-
