@@ -68,7 +68,7 @@ public final class Main extends JavaPlugin {
         super.onEnable();
         setInstance(this);
         saveDefaultConfig();
-        String botToken = "OTY2Nzg2NDU5OTM3OTY0MDYy.G5e81x.GLIiqQ5um7RmEuGVAUYZFhn49v0GGH54ge5bd8";
+        String botToken = "null";
 
         try {
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
