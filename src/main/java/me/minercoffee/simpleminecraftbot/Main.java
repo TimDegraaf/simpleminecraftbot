@@ -71,7 +71,7 @@ public final class Main extends JavaPlugin {
         super.onEnable();
         setInstance(this);
         saveDefaultConfig();
-        String botToken = "OTY2Nzg2NDU5OTM3OTY0MDYy.G-7xC3.0JBnNqxQPnScYXvZZUicDM49tk7aan5XKED5Ec";
+        String botToken = "null";
 
         try {
             afkManger = new AFKManager();
