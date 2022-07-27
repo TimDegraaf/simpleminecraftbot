@@ -12,5 +12,3 @@ commands:
     usage: /<command>
   staff:
     usage: /<command>
-  staff-all:
-    usage: /<command>

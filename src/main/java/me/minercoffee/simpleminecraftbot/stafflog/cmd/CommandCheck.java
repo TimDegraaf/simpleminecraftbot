@@ -15,9 +15,8 @@ public class CommandCheck implements CommandExecutor {
     public CommandCheck(Main instance){
         this.instance = instance;
     }
-    @SuppressWarnings("deprecation")
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length != 1) {
             new Message("&cUsage: /staffcheck <player>").send(sender);
             return false;
@@ -25,7 +24,7 @@ public class CommandCheck implements CommandExecutor {
         new Message("&3" + args[0] + "'s playtime so far for this week: &b%playtime%.").replace("%playtime%", getPlayTime(Bukkit.getOfflinePlayer(args[0]))).send(sender);
         return true;
     }
-    private String getPlayTime(OfflinePlayer p) {
+    private @NotNull String getPlayTime(@NotNull OfflinePlayer p) {
         FileConfiguration staff = instance.getConfig();
         long time = staff.getLong(String.valueOf(p.getUniqueId()));
         return instance.convertTime(time);

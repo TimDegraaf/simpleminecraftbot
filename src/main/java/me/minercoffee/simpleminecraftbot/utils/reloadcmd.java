@@ -11,8 +11,6 @@ import org.jetbrains.annotations.NotNull;
 @CommandInfo(
         name = "sbreload",
         permission = "simpleminecraftbot.admin",
-        playerOnly = false,
-        consoleOnly = false,
         args = {"player"}
 )
 public class reloadcmd implements CommandExecutor {

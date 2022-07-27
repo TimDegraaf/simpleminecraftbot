@@ -21,7 +21,7 @@ public class DateCheckRunnable extends BukkitRunnable {
         Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
         calendar.setTime(date);   // assigns calendar to given date
 
-        if (date.getDay() == 0 && calendar.get(Calendar.HOUR_OF_DAY) == 22) { //goes off at Sunday every week
+        if (date.getDay() == 0 && calendar.get(Calendar.HOUR_OF_DAY) == 22) {
             // discord stuff
             StringBuilder toSend = new StringBuilder();
             try {
@@ -39,9 +39,17 @@ public class DateCheckRunnable extends BukkitRunnable {
                     Main.getInstance().getConfig().set(key, null);
                 }
                 Main.getInstance().saveConfig();
+                Main.AdvancementsMsg();
+                plugin.saveConfig();
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }
+            try {
+                cancel();
+            } catch (IllegalStateException e){
+                e.printStackTrace();
+            }
+
         }
     }
 }

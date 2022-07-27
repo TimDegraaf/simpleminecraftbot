@@ -37,7 +37,6 @@ public class Clear extends ListenerAdapter {
             if (ClearChannelID != null) {
                 ClearChannel = jda.getTextChannelById(ClearChannelID);
             }
-         //   if (roles != null) return;
             if  ((roles != null && roles.contains("staff")) || roles != null && roles.contains("Owner")) {
                 if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
                     if (args.length <= 2) {

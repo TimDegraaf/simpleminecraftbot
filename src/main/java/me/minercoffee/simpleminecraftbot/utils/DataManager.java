@@ -14,14 +14,12 @@ public class DataManager {
     private final Main plugin;
     private FileConfiguration dataConfig = null;
     private File configFile = null;
-
-
     public DataManager(Main plugin){
         this.plugin = plugin;
         //saves/initializes
         saveDefaultConfig();
+        saveConfig();
     }
-
     public void reloadConfig(){
         if(this.configFile == null)
             this.configFile = new File(this.plugin.getDataFolder(), "config.yml");

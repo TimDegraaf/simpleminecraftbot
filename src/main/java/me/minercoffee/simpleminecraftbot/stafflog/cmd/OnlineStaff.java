@@ -16,19 +16,19 @@ import java.util.Objects;
 public class OnlineStaff extends ListenerAdapter {
 
     private final Main plugin;
+    int i = 1;
 
     public OnlineStaff(Main plugin) {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("java.lang.NullPointerException")
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         try {
             if (e.getMember() != null) return;
             String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
-            if (roles != null) return;
-            if (roles.contains("staff") || roles.contains("Owner")) {
+            if ((roles != null && roles.contains("staff")) || roles != null && roles.contains("Owner")) {
                 if (e.getAuthor().isBot()) return;
                 List<String> command = Arrays.asList(e.getMessage().getContentRaw().split(" "));
                 if (!command.get(0).equalsIgnoreCase("-onlinestaff")) return;
@@ -36,16 +36,19 @@ public class OnlineStaff extends ListenerAdapter {
                 String name = command.get(1);
                 OfflinePlayer p = Bukkit.getOfflinePlayer(name);
                 try {
-                    for(Player staff : list) {
+                    for (Player staff : list) {
                         if (staff.isOp() || staff.hasPermission("illusive.staff")) {
-                            e.getChannel().sendMessage("**" + p.getName() + "** is **" + "** available .").queue();
+                            e.getChannel().sendMessage("There are" + " " + i + " online" + " and " + "**" + p.getName() + "** is **" + "** available/").queue();
+                            i++;
                         }
                     }
                 } catch (IllegalArgumentException ex) {
                     ex.printStackTrace();
                 }
-            }
-    }catch (Exception var){
+
+        }
+            if (roles == null) return;
+        }catch(Exception var){
             var.printStackTrace();
         }
     }

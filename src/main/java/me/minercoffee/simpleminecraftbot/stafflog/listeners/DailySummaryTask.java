@@ -22,7 +22,7 @@ public class DailySummaryTask extends BukkitRunnable {
         Date date = new Date();
         Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
         calendar.setTime(date);   // assigns calendar to given date
-        if (calendar.get(Calendar.HOUR_OF_DAY) == 23) { //goes off at 11 pm pst
+        if (calendar.get(Calendar.HOUR_OF_DAY) == 22) {
             try {
                 StringBuilder toSend = new StringBuilder();
                 for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
@@ -31,6 +31,11 @@ public class DailySummaryTask extends BukkitRunnable {
                 System.out.println(toSend);
                 Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
             } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                cancel();
+            } catch (IllegalStateException e){
                 e.printStackTrace();
             }
         }
