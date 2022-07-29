@@ -12,3 +12,5 @@ commands:
     usage: /<command>
   staff:
     usage: /<command>
+  staffplaytime:
+    usage: /<command>

@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,17 +33,12 @@ public class PlayerLogListener implements Listener, TabExecutor {
         this.plugin = plugin;
         this.map = plugin.getMap();
     }
-    @EventHandler
+   @EventHandler
     public void onPlayerMovement(PlayerMoveEvent e) {
-        Player p = e.getPlayer();
-        if (p.hasPermission("illusive.staff")) {
-            if (afkManager.isAFK(e.getPlayer())) {
-                afkclockOut(e.getPlayer());
-            } else{
-                clockIn(e.getPlayer().getUniqueId());
-            }
-        }
-    }
+       Player p = e.getPlayer();
+       if (p.hasPermission("illusive.staff")) return;
+       afkManager.playerMoved(p);
+   }
 
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent e) {
@@ -64,23 +60,23 @@ public class PlayerLogListener implements Listener, TabExecutor {
         Player p = e.getPlayer();
         if (p.hasPermission("illusive.staff")) {
             clockOut(p);
+            saveAllPlayers();
         }
     }
-
 
     private @NotNull Long getTimeFromConfig(UUID p) {
         FileConfiguration config = Main.getInstance().getConfig();
         return config.getLong(String.valueOf(p));
     }
 
-    private void clockIn(UUID p) {
+    public void clockIn(UUID p) {
         if (map != null) {
             map.put(p, System.currentTimeMillis());
         }
         System.out.print("clocked in " + p);
     }
 
-    private void clockOut(@NotNull Player p) {
+    public void clockOut(@NotNull Player p) {
         long logoutTime = System.currentTimeMillis();
         long loginTime = 0;
         if (map != null) {
@@ -97,7 +93,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         Main.getInstance().saveConfig();
         Main.getInstance().senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
     }
-    private void afkclockOut(@NotNull Player p) {
+    public void afkclockOut(@NotNull Player p) {
         long logoutTime = System.currentTimeMillis();
 
         long loginTime = 0;
@@ -197,6 +193,23 @@ public class PlayerLogListener implements Listener, TabExecutor {
                 }
             }
         }
+       sender = sender.getServer().getConsoleSender();
+        if (!(sender instanceof Player)){
+            Player player = (Player) Bukkit.getOnlinePlayers();
+            if (args[0].equalsIgnoreCase("all")) {
+                ArrayList<Player> list = new ArrayList<>(player.getServer().getOnlinePlayers());
+                if (player.isOp() | player.hasPermission("illusive.staff")) {
+                    for (Player staff : list) {
+                        if (staff.isOp() || staff.hasPermission("illusive.staff")) {
+                            player.sendMessage((ColorMsg.color("&lThere are " + staff.getName() + " available for staff duties")));
+                            player.sendMessage((ColorMsg.color("&lThere are " + i + " staff online")));
+                            i++;
+                        }
+                    }
+                }
+            }
+        }
+
         return true;
     }
 

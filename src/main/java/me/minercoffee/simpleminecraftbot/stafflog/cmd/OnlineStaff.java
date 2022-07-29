@@ -47,7 +47,6 @@ public class OnlineStaff extends ListenerAdapter {
                 }
 
         }
-            if (roles == null) return;
         }catch(Exception var){
             var.printStackTrace();
         }

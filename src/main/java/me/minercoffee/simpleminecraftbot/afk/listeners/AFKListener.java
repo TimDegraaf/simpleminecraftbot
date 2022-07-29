@@ -19,25 +19,20 @@ public class AFKListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
-        if (p.hasPermission("illusive.staff")) {
-            afkManager.playerJoined(e.getPlayer());
-        }
+        afkManager.playerJoined(p);
     }
 
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        if (p.hasPermission("illusive.staff")) {
-            afkManager.playerLeft(e.getPlayer());
-        }
+        afkManager.playerLeft(p);
+
     }
 
     @EventHandler
     public void onPlayerMovement(PlayerMoveEvent e) {
         Player p = e.getPlayer();
-        if (p.hasPermission("illusive.staff")) {
-            afkManager.playerMoved(e.getPlayer());
-        }
+        afkManager.playerMoved(p);
     }
 }

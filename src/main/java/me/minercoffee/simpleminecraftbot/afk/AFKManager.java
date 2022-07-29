@@ -1,5 +1,6 @@
 package me.minercoffee.simpleminecraftbot.afk;
 
+import me.minercoffee.simpleminecraftbot.stafflog.listeners.PlayerLogListener;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -7,9 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AFKManager {
+    private final PlayerLogListener playerlog;
 
     private final HashMap<Player, Long> lastMovement = new HashMap<>();
     private final HashMap<Player, Boolean> previousData = new HashMap<>();
+
+    public AFKManager(PlayerLogListener playerlog) {
+        this.playerlog = playerlog;
+    }
 
     public void playerJoined(Player player){
         lastMovement.put(player, System.currentTimeMillis());
@@ -42,13 +48,11 @@ public class AFKManager {
     }
 
     public boolean isAFK(Player player){
-
         if(lastMovement.containsKey(player)){
             if(lastMovement.get(player) == -1L){
                 return true;
             }else{
                 long timeElapsed = System.currentTimeMillis() - lastMovement.get(player);
-
                 //see if they have moved since 5 minute
                 //60000
                 long MOVEMENT_THRESHOLD = 60000L;
@@ -62,11 +66,9 @@ public class AFKManager {
     }
 
     public void checkAllPlayersAFKStatus(){
-
         for (Map.Entry<Player, Long> entry : lastMovement.entrySet()){
             checkPlayerAFKStatus(entry.getKey());
         }
-
     }
 
     public void checkPlayerAFKStatus(Player player){
@@ -80,6 +82,7 @@ public class AFKManager {
 
                 if(wasAFK && !nowAFK){
                     //player.sendMessage("You are no longer AFK");
+                    playerlog.clockIn(player.getUniqueId());
                     previousData.put(player, false);
 
                     announceToOthers(player, false);
@@ -87,7 +90,7 @@ public class AFKManager {
                 }else if(!wasAFK && nowAFK){
                   //  player.sendMessage("You are now AFK!");
                     previousData.put(player, true);
-
+                    playerlog.afkclockOut(player);
                     announceToOthers(player, true);
                 }
 

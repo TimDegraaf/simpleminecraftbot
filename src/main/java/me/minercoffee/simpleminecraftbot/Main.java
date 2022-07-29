@@ -1,13 +1,9 @@
 package me.minercoffee.simpleminecraftbot;
 
-import io.papermc.paper.event.player.AsyncChatEvent;
 import me.minercoffee.simpleminecraftbot.afk.AFKManager;
 import me.minercoffee.simpleminecraftbot.afk.listeners.AFKListener;
 import me.minercoffee.simpleminecraftbot.afk.tasks.MovementChecker;
-import me.minercoffee.simpleminecraftbot.stafflog.cmd.CommandCheck;
-import me.minercoffee.simpleminecraftbot.stafflog.cmd.DiscordCommandCheckLegacy;
-import me.minercoffee.simpleminecraftbot.stafflog.cmd.Discordhelp;
-import me.minercoffee.simpleminecraftbot.stafflog.cmd.OnlineStaff;
+import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.ticket.commands;
@@ -23,16 +19,12 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -45,6 +37,7 @@ import java.util.*;
 
 public final class Main extends JavaPlugin {
     private AFKManager afkManger;
+    private PlayerLogListener playerlog;
 
     public HashMap<UUID, Long> map = new HashMap<>();
 
@@ -74,7 +67,8 @@ public final class Main extends JavaPlugin {
         String botToken = "null";
 
         try {
-            afkManger = new AFKManager();
+            afkManger = new AFKManager(playerlog);
+            playerlog = new PlayerLogListener(afkManger, this);
             AdvancementsMsg();
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
@@ -86,6 +80,7 @@ public final class Main extends JavaPlugin {
             staffchannel = jda.getTextChannelById(staffplaytimechannel);
             jda.addEventListener(new Discordhelp(), new DiscordBotPingEvent());
             getCommand("staffcheck").setExecutor(new CommandCheck(this));
+            getCommand("staffplaytime").setExecutor(new Staffplaytime(this));
             getCommand("staff").setExecutor(new PlayerLogListener(afkManger, instance));
             getServer().getPluginManager().registerEvents(new PlayerLogListener(afkManger, instance), this);
             getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
@@ -283,7 +278,7 @@ public final class Main extends JavaPlugin {
     }
 
     public void AFK(){
-        AFKManager afkManager = new AFKManager();
+        AFKManager afkManager = new AFKManager(playerlog);
 
         //getCommand("isafk").setExecutor(new isAFKCommand(afkManager));
         //getCommand("afk").setExecutor(new AFKCommand(afkManager));

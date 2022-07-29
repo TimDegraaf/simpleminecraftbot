@@ -16,7 +16,7 @@ public class Discordhelp extends ListenerAdapter {
         String[] args = e.getMessage().getContentRaw().split(" ");
         if (args[0].equalsIgnoreCase(Main.getPREFIX() + "help")) {
             if (roles != null) return;
-            if (roles.contains("staff") | roles.contains("Owner")) {
+            if (roles.contains("staff") || roles.contains("Owner")) {
                 EmbedBuilder eb = new EmbedBuilder()
                         .setFooter(e.getAuthor().getName(), e.getAuthor().getAvatarUrl())
                         .setTitle("Command List")
