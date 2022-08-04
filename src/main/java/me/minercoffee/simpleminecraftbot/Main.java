@@ -1,10 +1,10 @@
 package me.minercoffee.simpleminecraftbot;
 
-import me.minercoffee.simpleminecraftbot.afk.AFKManager;
-import me.minercoffee.simpleminecraftbot.afk.listeners.AFKListener;
-import me.minercoffee.simpleminecraftbot.afk.tasks.MovementChecker;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
+import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKListener;
+import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKManager;
+import me.minercoffee.simpleminecraftbot.stafflog.ontask.MovementChecker;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.ticket.commands;
 import me.minercoffee.simpleminecraftbot.utils.DataManager;
@@ -36,8 +36,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 public final class Main extends JavaPlugin {
-    private AFKManager afkManger;
-    private PlayerLogListener playerlog;
+    public PlayerLogListener playerLogListener;
+    public AFKManager afkManager;
 
     public HashMap<UUID, Long> map = new HashMap<>();
 
@@ -62,13 +62,13 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         super.onEnable();
+        this.afkManager = new AFKManager();
+        this.playerLogListener = new PlayerLogListener(this);
         setInstance(this);
         saveDefaultConfig();
-        String botToken = "null";
+        String botToken = "";
 
         try {
-            afkManger = new AFKManager(playerlog);
-            playerlog = new PlayerLogListener(afkManger, this);
             AdvancementsMsg();
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
@@ -81,8 +81,8 @@ public final class Main extends JavaPlugin {
             jda.addEventListener(new Discordhelp(), new DiscordBotPingEvent());
             getCommand("staffcheck").setExecutor(new CommandCheck(this));
             getCommand("staffplaytime").setExecutor(new Staffplaytime(this));
-            getCommand("staff").setExecutor(new PlayerLogListener(afkManger, instance));
-            getServer().getPluginManager().registerEvents(new PlayerLogListener(afkManger, instance), this);
+            getCommand("staff").setExecutor(new PlayerLogListener(instance));
+            getServer().getPluginManager().registerEvents(new PlayerLogListener(instance), this);
             getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
             new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60 * 20L);
@@ -94,7 +94,7 @@ public final class Main extends JavaPlugin {
             jda.addEventListener(new OnlineStaff(this));
             jda.addEventListener(new DiscordCommandCheckLegacy());
             new reloadcmd(this);
-            AFK();
+            onTask();
             getServer().getPluginManager().registerEvents(new SpigotListener(), this);
             getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
             getCommand("sbreload").setExecutor(new reloadcmd(this));
@@ -115,6 +115,10 @@ public final class Main extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public void onTask(){
+        getServer().getPluginManager().registerEvents(new AFKListener(this.afkManager), this);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MovementChecker(this.afkManager), 0L, 600L);
     }
 
     private void purgeMessages (TextChannel channel) {
@@ -173,7 +177,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        (new PlayerLogListener(afkManger, instance)).saveAllPlayers();
+        (new PlayerLogListener(instance)).saveAllPlayers();
         try {
             BotisOfflineembed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is offline.", true, Color.RED);
             Serverisoffline(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is Restarting.", true, Color.RED);
@@ -275,17 +279,6 @@ public final class Main extends JavaPlugin {
         int hours = (int) ((ms / (1000 * 60 * 60)) % 24);
 
         return hours + " hours, " + minutes + " minutes and " + seconds + " seconds";
-    }
-
-    public void AFK(){
-        AFKManager afkManager = new AFKManager(playerlog);
-
-        //getCommand("isafk").setExecutor(new isAFKCommand(afkManager));
-        //getCommand("afk").setExecutor(new AFKCommand(afkManager));
-
-        getServer().getPluginManager().registerEvents(new AFKListener(afkManager), this);
-
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MovementChecker(afkManager), 0L, 600L);
     }
 
     public void BotSendEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {

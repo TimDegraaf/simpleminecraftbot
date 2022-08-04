@@ -1,6 +1,5 @@
 package me.minercoffee.simpleminecraftbot.stafflog.listeners;
 
-import me.minercoffee.simpleminecraftbot.Main;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

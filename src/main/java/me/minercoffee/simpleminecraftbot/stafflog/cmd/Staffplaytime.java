@@ -21,29 +21,35 @@ public class Staffplaytime implements TabExecutor {
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        Player player = (Player) sender;
-        if (label.equalsIgnoreCase("staffplaytime") && player.isOp()) {
-            if (args[0].equalsIgnoreCase("report")) {
-
-                StringBuilder toSend = new StringBuilder();
-                try {
-                    for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
-                        toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+        if (!(sender instanceof Player player)) {
+         //   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "staffplaytime report");
+          //  Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "staffplaytime reset");
+            System.out.println("testaaaa");
+        } else {
+            if (label.equalsIgnoreCase("staffplaytime") && player.isOp()) {
+                if (args[0].equalsIgnoreCase("report")) {
+                    StringBuilder toSend = new StringBuilder();
+                    try {
+                        for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
+                            toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+                        }
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
                     }
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                    plugin.playerLogListener.saveAllPlayers();
+                    System.out.println(toSend);
+                    Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
                 }
-                System.out.println(toSend);
-                Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
-            }
-            if (args[0].equalsIgnoreCase("reset")) {
-                // clear the config
-                for (String key : Main.getInstance().getConfig().getKeys(false)) {
-                    Main.getInstance().getConfig().set(key, null);
+                if (args[0].equalsIgnoreCase("reset")) {
+                    // clear the config
+                    for (String key : Main.getInstance().getConfig().getKeys(false)) {
+                        plugin.playerLogListener.saveAllPlayers();
+                        Main.getInstance().getConfig().set(key, null);
+                        plugin.saveConfig();
+                    }
+                    Main.AdvancementsMsg();
+                    Main.getInstance().saveConfig();
                 }
-                Main.getInstance().saveConfig();
-                Main.AdvancementsMsg();
-                plugin.saveConfig();
             }
         }
         return true;
