@@ -7,6 +7,7 @@ import me.minercoffee.simpleminecraftbot.Main;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 public class UpdateCheckListener implements Listener {
     private final Main plugin;
@@ -15,7 +16,7 @@ public class UpdateCheckListener implements Listener {
         this.plugin = plugin;
     }
     @EventHandler
-    public void onUpdateCheck(UpdateCheckEvent event) {
+    public void onUpdateCheck(@NotNull UpdateCheckEvent event) {
         if(event.getRequesters()==null) return;
 
         for(CommandSender sender : event.getRequesters()) {
@@ -32,4 +33,3 @@ public class UpdateCheckListener implements Listener {
 
     }
 }
-

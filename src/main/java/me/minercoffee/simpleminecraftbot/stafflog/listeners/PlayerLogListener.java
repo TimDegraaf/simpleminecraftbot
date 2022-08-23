@@ -62,9 +62,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         FileConfiguration config = Main.getInstance().getConfig();
         return config.getLong(String.valueOf(p));
     }
-
     public void clockIn(UUID p) {
-
         if (map != null) {
             map.put(p, System.currentTimeMillis());
         }
@@ -76,8 +74,6 @@ public class PlayerLogListener implements Listener, TabExecutor {
         long loginTime = 0;
         if (map != null) {
             loginTime = map.get(p.getUniqueId());
-        }
-        if (map != null) {
             map.remove(p.getUniqueId());
         }
         FileConfiguration config = Main.getInstance().getConfig();
@@ -86,7 +82,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         Long toSet = timeToday + timeFromConfig;
         config.set(String.valueOf(p.getUniqueId()), toSet);
         Main.getInstance().saveConfig();
-        Main.getInstance().senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        plugin.senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
     }
 
     public void saveAllPlayers() {
@@ -103,29 +99,22 @@ public class PlayerLogListener implements Listener, TabExecutor {
         }
     }
     public void currentTime(Player p) {
-            long logoutTime = System.currentTimeMillis();
-            long loginTime = 0;
-            try {
-                if (map != null) {
-                    loginTime = map.get(p.getUniqueId());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        long logoutTime = System.currentTimeMillis();
+        long loginTime;
+        try {
+            if (map != null) {
+                loginTime = map.get(p.getUniqueId());
+                FileConfiguration config = Main.getInstance().getConfig();
+                Long timeToday = logoutTime - loginTime;
+                Long timeFromConfig = getTimeFromConfig(p.getUniqueId());
+                Long toSet = timeToday + timeFromConfig;
+                config.set(String.valueOf(p.getUniqueId()), toSet);
+                Main.getInstance().saveConfig();
+                plugin.sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
             }
-            try {
-                if (map != null) {
-                    map.get(p.getUniqueId());
-                }
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-            FileConfiguration config = Main.getInstance().getConfig();
-            Long timeToday = logoutTime - loginTime;
-            Long timeFromConfig = getTimeFromConfig(p.getUniqueId());
-            Long toSet = timeToday + timeFromConfig;
-            config.set(String.valueOf(p.getUniqueId()), toSet);
-            Main.getInstance().saveConfig();
-            Main.getInstance().sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
     public void afkclockOut(@NotNull Player p) {
         try {

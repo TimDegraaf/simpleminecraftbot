@@ -14,14 +14,9 @@ import java.util.List;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import static me.minercoffee.simpleminecraftbot.Main.jda;
-
 public class Clear extends ListenerAdapter {
-    Main plugin;
-    private TextChannel ClearChannel;
+    private final Main plugin;
 
     public Clear(Main plugin) {
         this.plugin = plugin;
@@ -30,17 +25,14 @@ public class Clear extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         try {
-            String[] args = e.getMessage().getContentRaw().split(" ");
+            if (e.getAuthor().isBot()) return;
             if (e.getMember() != null) return;
-            String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
-            String ClearChannelID = plugin.getConfig().getString("Command-channel");
-            if (ClearChannelID != null) {
-                ClearChannel = jda.getTextChannelById(ClearChannelID);
-            }
+            String[] args = e.getMessage().getContentRaw().split(" ");
+            String roles = String.valueOf((e.getMember()).getRoles());
             if  ((roles != null && roles.contains("staff")) || roles != null && roles.contains("Owner")) {
                 if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
                     if (args.length <= 2) {
-                        sendErrorMessage(e.getTextChannel(), e.getMember());
+                        sendErrorMessage(e.getChannel().asTextChannel(), e.getMember());
                     } else {
                         e.getMessage().delete().queue();
                         TextChannel target = (TextChannel) e.getMessage().getMentions().getChannels().get(0);
@@ -50,9 +42,9 @@ public class Clear extends ListenerAdapter {
                             for (int i = 3; i < args.length; i++) {
                                 reason.append(args[i]).append(" ");
                             }
-                            log(e.getMember(), args[2], reason.toString(), ClearChannel, target); //channel which the cmd can be executed.
+                            log(e.getMember(), args[2], reason.toString(), plugin.commands, target); //channel which the cmd can be executed.
                         } else {
-                            log(e.getMember(), args[2], " ", ClearChannel, target);
+                            log(e.getMember(), args[2], " ", plugin.commands, target);
                         }
                     }
                 }
@@ -61,7 +53,6 @@ public class Clear extends ListenerAdapter {
             ex.printStackTrace();
         }
     }
-
     public void sendErrorMessage(TextChannel channel, Member member) {
         try {
             EmbedBuilder builder = new EmbedBuilder();
@@ -76,7 +67,6 @@ public class Clear extends ListenerAdapter {
             e.getCause();
         }
     }
-
     public void log(Member clear, String num, String reason, TextChannel incident, TextChannel cleared) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
@@ -96,7 +86,6 @@ public class Clear extends ListenerAdapter {
             e.printStackTrace();
         }
     }
-
     private void purgeMessages(TextChannel channel, int num) {
         try {
             MessageHistory history = new MessageHistory(channel);

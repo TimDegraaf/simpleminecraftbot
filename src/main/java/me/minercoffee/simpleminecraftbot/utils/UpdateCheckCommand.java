@@ -14,7 +14,7 @@ import java.util.List;
 public class UpdateCheckCommand implements CommandExecutor {
     @SuppressWarnings("deprecation")
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, String[] args) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, String @NotNull [] args) {
 
         // Check for updates and send result to the one who entered the command
         if(args.length == 0) {

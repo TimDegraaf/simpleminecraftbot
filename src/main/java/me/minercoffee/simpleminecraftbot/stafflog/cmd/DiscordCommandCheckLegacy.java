@@ -18,19 +18,17 @@ public class DiscordCommandCheckLegacy extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        if (e.getMember() != null) {
-            String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
-            if ((roles != null && roles.contains("staff")) || roles != null && roles.contains("Owner")) {
-
-                if (e.getAuthor().isBot()) return;
-                List<String> command = Arrays.asList(e.getMessage().getContentRaw().split(" "));
-                if (!command.get(0).equalsIgnoreCase("-staffcheck")) return;
-                String name = command.get(1);
-                OfflinePlayer p = Bukkit.getOfflinePlayer(name);
-                FileConfiguration config = Main.getInstance().getConfig();
-                String time = Main.getInstance().convertTime(config.getLong(String.valueOf(p.getUniqueId())));
-                e.getChannel().sendMessage("**" + p.getName() + "** has **" + time + "** logged this week.").queue();
-            }
+        if (e.getAuthor().isBot()) return;
+        if (e.getMember() != null) return;
+        String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
+        if ((roles != null && roles.contains("staff")) || roles != null && roles.contains("Owner")) {
+            List<String> command = Arrays.asList(e.getMessage().getContentRaw().split(" "));
+            if (!command.get(0).equalsIgnoreCase("-staffcheck")) return;
+            String name = command.get(1);
+            OfflinePlayer p = Bukkit.getOfflinePlayer(name);
+            FileConfiguration config = Main.getInstance().getConfig();
+            String time = Main.getInstance().convertTime(config.getLong(String.valueOf(p.getUniqueId())));
+            e.getChannel().sendMessage("**" + p.getName() + "** has **" + time + "** logged this week.").queue();
         }
     }
 }

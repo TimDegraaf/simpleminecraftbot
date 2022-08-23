@@ -6,9 +6,12 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -27,7 +30,7 @@ public class ButtonListener extends ListenerAdapter {
     public void onButtonInteraction(@NotNull ButtonInteractionEvent e) {
         try {
             e.deferEdit().queue();
-            if (e.getButton().getId().contains("openTicket")) {
+            if (e.getComponent().getId().equals("openTicket")) {
                 String role = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
                 if (!role.contains("Discord Helper") || !role.contains("staff") ) {
                     int min = 1;
@@ -43,10 +46,10 @@ public class ButtonListener extends ListenerAdapter {
                     embed.setDescription("A staff member will be with you shortly!");
 
                     if (guild != null) {
-                        guild.createTextChannel("ticket-" + random_int, guild.getCategoryById("967112062897623070")) //catorgory id channel
+                        guild.createTextChannel("ticket-" + random_int, guild.getCategoryById("1008896931306676244")) //catorgory id channel
                                 .addPermissionOverride(e.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
                                 .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                                .addPermissionOverride(Objects.requireNonNull(guild.getRoleById("976218237538824194")), EnumSet.of(Permission.VIEW_CHANNEL), null) //double check the role id player role
+                                .addPermissionOverride(Objects.requireNonNull(guild.getRoleById("976218237538824194")), EnumSet.of(Permission.VIEW_CHANNEL), null) //double-check the role id player role
                                 .complete().sendMessageEmbeds(embed.build()).setActionRow(closeButton(), claimButton()).queue();
                     }
                     EmbedBuilder embedTeam = new EmbedBuilder();
@@ -55,7 +58,7 @@ public class ButtonListener extends ListenerAdapter {
                     embedTeam.addField("Person", e.getMember().getAsMention(), true);
                     embedTeam.addField("Date", format.format(date), true);
                     if (guild != null) {
-                        Objects.requireNonNull(guild.getTextChannelById("967112062897623070")).sendMessageEmbeds(embedTeam.build()).queue(); //check what channel it sends to.
+                        Objects.requireNonNull(guild.getTextChannelById("1008896931306676244")).sendMessageEmbeds(embedTeam.build()).queue(); //check what channel it sends to.
                     }
                 } else {
                     EmbedBuilder embed = new EmbedBuilder()
@@ -64,14 +67,14 @@ public class ButtonListener extends ListenerAdapter {
                             .setDescription("You have the ticket role.");
                     e.getUser().openPrivateChannel().complete().sendMessageEmbeds(embed.build()).queue();
                 }
-            } else if (e.getButton().getId().equals("closeButton")) {
+            } else if (e.getComponent().getId().equals("closeButton")) {
                 String roles = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
                 if (roles.contains("Discord Helper") || roles.contains("staff") ) {
                     e.getInteraction().getChannel().delete().queue();
                 }
-            } else if (e.getButton().getId().equals("claimButton")) {
+            } else if (e.getComponent().getId().equals("claimButton")) {
                 if (Objects.requireNonNull(e.getInteraction().getMember()).hasPermission(Permission.KICK_MEMBERS)) {
-                    TextChannel channel = e.getTextChannel();
+                    TextChannel channel = e.getChannel().asTextChannel();
                     e.getInteraction().getMessage().delete().queue();
                     EmbedBuilder embed = new EmbedBuilder()
                             .setColor(Color.GREEN)
@@ -96,10 +99,20 @@ public class ButtonListener extends ListenerAdapter {
             ex.printStackTrace();
         }
     }
-    private Button closeButton(){
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent e){
+        if(e.getName().equals("openTicket")) {
+            e.reply("Click to create a Ticket.").addActionRow(
+                    Button.primary("openTicket", "Contact Support"),
+                    Button.success("openTicket", Emoji.fromCustom(":ticket:", Long.parseLong("ticket"),false ))).queue();
+        }
+    }
+    @Contract(" -> new")
+    private @NotNull Button closeButton(){
         return Button.danger("closeButton", "Close");
     }
-    private Button claimButton(){
+    @Contract(" -> new")
+    private @NotNull Button claimButton(){
         return Button.success("claimButton", "Claim");
     }
 }

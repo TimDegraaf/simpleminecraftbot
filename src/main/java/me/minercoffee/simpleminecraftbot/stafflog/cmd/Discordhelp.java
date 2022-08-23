@@ -29,7 +29,6 @@ public class Discordhelp extends ListenerAdapter {
     private @NotNull StringBuilder getHelpMessage() {
         StringBuilder sb = new StringBuilder();
         sb.append("`-staffcheck` | `Returns the total playtime for the specified staff member for the current week.`\n");
-        sb.append("`-ping` | `Returns the current server ping.` **(BETA)**\n");
         sb.append("`-onlinestaff` | `Returns all staff members that are on the server.` **(BETA)**");
         sb.append("`?purge` | `Clears chat` **(BETA)**");
         return sb;

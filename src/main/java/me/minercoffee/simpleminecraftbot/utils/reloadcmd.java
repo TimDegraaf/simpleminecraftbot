@@ -14,10 +14,8 @@ import org.jetbrains.annotations.NotNull;
         args = {"player"}
 )
 public class reloadcmd implements CommandExecutor {
-    Main plugin;
 
     public reloadcmd(Main plugin) {
-        this.plugin = plugin;
     }
 
     @Override

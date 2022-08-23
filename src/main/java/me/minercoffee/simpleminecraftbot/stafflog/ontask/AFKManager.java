@@ -10,7 +10,9 @@ import java.util.Map;
 public class AFKManager {
 
     private final HashMap<Player, Long> lastMovement = new HashMap<>();
+
     private final HashMap<Player, Boolean> previousData = new HashMap<>();
+
     public void playerJoined(Player player){
         lastMovement.put(player, System.currentTimeMillis());
     }
@@ -25,24 +27,22 @@ public class AFKManager {
         lastMovement.put(player, System.currentTimeMillis());
         checkPlayerAFKStatus(player);
     }
-
     public boolean isAFK(Player player){
 
         if(lastMovement.containsKey(player)){
             if(lastMovement.get(player) == -1L){
                 return true;
             }else{
-                long timeElapsed = System.currentTimeMillis() - lastMovement.get(player);
+                long timeElapsed = System.currentTimeMillis() - lastMovement.get(player) *-1;
                 // means the player is afk
                 //see if they have moved since 10 minute
                 //600000
                 long MOVEMENT_THRESHOLD = 600000L;
                 return timeElapsed >= MOVEMENT_THRESHOLD;
             }
-        }else{
+        }else {
             lastMovement.put(player, System.currentTimeMillis());
-        }
-
+                }
         return false;
     }
 

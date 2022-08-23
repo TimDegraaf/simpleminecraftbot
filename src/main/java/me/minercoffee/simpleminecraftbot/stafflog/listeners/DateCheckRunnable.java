@@ -9,7 +9,6 @@ import java.util.*;
 
 public class DateCheckRunnable extends BukkitRunnable {
     private final Main plugin;
-
     public DateCheckRunnable(Main plugin) {
         this.plugin = plugin;
     }
@@ -32,7 +31,7 @@ public class DateCheckRunnable extends BukkitRunnable {
                 e.printStackTrace();
             }
             System.out.println(toSend);
-            Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+            plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
             try {
                 // clear the config
                 for (String key : Main.getInstance().getConfig().getKeys(false)) {

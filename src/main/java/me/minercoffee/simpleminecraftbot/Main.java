@@ -1,16 +1,15 @@
 package me.minercoffee.simpleminecraftbot;
 
+import me.minercoffee.simpleminecraftbot.clearcmd.Clear;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
 import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKListener;
 import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKManager;
 import me.minercoffee.simpleminecraftbot.stafflog.ontask.MovementChecker;
+import me.minercoffee.simpleminecraftbot.stafflog.staffchat;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.ticket.commands;
-import me.minercoffee.simpleminecraftbot.utils.DataManager;
-import me.minercoffee.simpleminecraftbot.utils.UpdateCheckCommand;
-import me.minercoffee.simpleminecraftbot.utils.UpdateCheckListener;
-import me.minercoffee.simpleminecraftbot.utils.reloadcmd;
+import me.minercoffee.simpleminecraftbot.utils.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -32,29 +31,29 @@ import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.List;
 
 public final class Main extends JavaPlugin {
     public PlayerLogListener playerLogListener;
     public AFKManager afkManager;
-
     public HashMap<UUID, Long> map = new HashMap<>();
-
     public DataManager data;
     public static void setInstance(Main instance) {
         Main.instance = instance;
     }
-
     public static Main instance;
     public final Map<String, String> advancementToDisplayMap = new HashMap<>();
     public static JDA jda;
-    private TextChannel chatChannel;
-
-    private TextChannel staffchannel;
-
-    private TextChannel ServerStatuschannel;
-
+    public TextChannel chatChannel;
+    public TextChannel staffchannel;
+    public TextChannel ServerStatuschannel;
+    public TextChannel StaffChat;
+    public TextChannel Console;
+    public TextChannel commands;
+    int i = 1;
     private static final String PREFIX = "!";
     public static Main getInstance() {
         return instance;
@@ -66,19 +65,37 @@ public final class Main extends JavaPlugin {
         this.playerLogListener = new PlayerLogListener(this);
         setInstance(this);
         saveDefaultConfig();
-        String botToken = "";
-
+        String botToken = " ";
         try {
             AdvancementsMsg();
-            jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
-                    .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
-            String chatChannelId = "966782706165882951";
-            chatChannel = jda.getTextChannelById(chatChannelId);
-            String ServerStatus = "979621646870650960";
-            ServerStatuschannel =jda.getTextChannelById(ServerStatus);
-            String staffplaytimechannel = "965844461772996628";
-            staffchannel = jda.getTextChannelById(staffplaytimechannel);
-            jda.addEventListener(new Discordhelp(), new DiscordBotPingEvent());
+            jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("With Minecraft Closed!")).setStatus(OnlineStatus.ONLINE)
+                    .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
+            String chatChannelId = getConfig().getString("chat");
+            if (chatChannelId != null) {
+                chatChannel = jda.getTextChannelById(chatChannelId);
+            }
+            String ServerStatus = getConfig().getString("serverstatus");
+            if (ServerStatus != null) {
+                ServerStatuschannel =jda.getTextChannelById(ServerStatus);
+            }
+            String staffchatid = getConfig().getString("staffchat");
+            if (staffchatid != null){
+                StaffChat = jda.getTextChannelById(staffchatid);
+            }
+            String staffplaytimechannel = getConfig().getString("staffplaytime");
+            if (staffplaytimechannel != null) {
+                staffchannel = jda.getTextChannelById(staffplaytimechannel);
+            }
+            String consolechannl = getConfig().getString("console");
+            if (consolechannl != null){
+                Console = jda.getTextChannelById(consolechannl);
+            }
+            String commandid = getConfig().getString("commands");
+            if (commandid != null){
+                commands = jda.getTextChannelById(commandid);
+            }
+            new staffchat(this);
+            jda.addEventListener(new Discordhelp(), new DiscordBotPingEvent(),  new staffchat(this));
             getCommand("staffcheck").setExecutor(new CommandCheck(this));
             getCommand("staffplaytime").setExecutor(new Staffplaytime(this));
             getCommand("staff").setExecutor(new PlayerLogListener(instance));
@@ -87,7 +104,7 @@ public final class Main extends JavaPlugin {
             new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60 * 20L);
             new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
-            // jda.addEventListener(new Clear(this));
+            jda.addEventListener(new Clear(this));
             jda.addEventListener(new ButtonListener(this));
             jda.addEventListener(new commands());
             jda.addEventListener(new DiscordListener());
@@ -120,7 +137,6 @@ public final class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AFKListener(this.afkManager), this);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MovementChecker(this.afkManager), 0L, 600L);
     }
-
     private void purgeMessages (TextChannel channel) {
         MessageHistory history = new MessageHistory(channel);
         List<Message> msg;
@@ -170,11 +186,32 @@ public final class Main extends JavaPlugin {
         instance.getConfig().addDefault("advancementMap.nether/brew_potion", "Bring Home the Beacon"); //check msg on wiki
         instance.getConfig().addDefault("advancementMap.nether/create_beacon", "Bring Home the Beacon");
         instance.getConfig().addDefault("advancementMap.nether/all_potions", "A Furious Cocktail");
-
-
-
+        instance.getConfig().addDefault("advancementMap.nether/create_full_beacon", "Beaconator");
+        instance.getConfig().addDefault("advancementMap.nether/all_effects", "How Did We Get Here?");
+        instance.getConfig().addDefault("advancementMap.end/kill_dragon", "Free the End");
+        instance.getConfig().addDefault("advancementMap.end/dragon_egg", "The Next Generation");
+        instance.getConfig().addDefault("advancementMap.end/enter_end_gateway", "Remote Getaway");
+        instance.getConfig().addDefault("advancementMap.end/respawn_dragon", "The End... Again...");
+        instance.getConfig().addDefault("advancementMap.end/dragon_breath",  "You Need a Mint");
+        instance.getConfig().addDefault("advancementMap.end/find_end_city", "The City at the End of the Game");
+        instance.getConfig().addDefault("advancementMap.end/elytra", "Sky's the Limit");
+        instance.getConfig().addDefault("advancementMap.end/levitate", "Great View From Up Here");
+        instance.getConfig().addDefault("advancementMap.adventure/voluntary_exile", "Voluntary Exile");
+        instance.getConfig().addDefault("advancementMap.adventure/kill_a_mob", "Monster Hunter");
+        instance.getConfig().addDefault("advancementMap.adventure/trade", "What a Deal!");
+        instance.getConfig().addDefault("advancementMap.adventure/honey_block_slide", "Sticky Situation");
+        instance.getConfig().addDefault("advancementMap.adventure/ol_betsy", "Ol' Betsy");
+        instance.getConfig().addDefault("advancementMap.adventure/sleep_in_bed", "Sweet Dreams");
+        instance.getConfig().addDefault("advancementMap.adventure/hero_of_the_village", "Hero of the Village");
+        instance.getConfig().addDefault("staffplaytime", "965844461772996628");
+        instance.getConfig().addDefault("serverstatus", "979621646870650960");
+        instance.getConfig().addDefault("chat", "966782706165882951");
+        instance.getConfig().addDefault("staffchat", "1008575207008653452");
+        instance.getConfig().addDefault("console", "1008797203676012647");
+        instance.getConfig().addDefault("Status-enable", "true");
+        instance.getConfig().addDefault("commands", "966782672259129424");
+        instance.saveConfig();
     }
-
     @Override
     public void onDisable() {
         (new PlayerLogListener(instance)).saveAllPlayers();
@@ -232,9 +269,18 @@ public final class Main extends JavaPlugin {
 
         staffchannel.sendMessageEmbeds(builder.build()).queue();
     }
-
+    public void sendStaffChatEmbled(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
+        if (StaffChat == null) return;
+        EmbedBuilder builder = new EmbedBuilder()
+                .setAuthor(content,
+                        null,
+                        "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
+        builder.setColor(java.awt.Color.YELLOW);
+        StaffChat.sendMessageEmbeds(builder.build()).queue();
+    }
     public void BotisOfflineembed(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
         if (ServerStatuschannel == null) return;
+        if(this.getConfig().getBoolean("Status-enable")) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
                 .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true)
@@ -283,6 +329,7 @@ public final class Main extends JavaPlugin {
 
     public void BotSendEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
         if (ServerStatuschannel != null) {
+            if(this.getConfig().getBoolean("Status-enable")) return;
             EmbedBuilder builder = (new EmbedBuilder()).setAuthor(contentAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1")
                     .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
                     .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true);
@@ -294,77 +341,67 @@ public final class Main extends JavaPlugin {
             purgeMessages(ServerStatuschannel);
         }
     }
-
-    private void sendMessage(Player player, String content,  boolean contentAuthorLine){
-        if (chatChannel == null) return;
-        EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor(contentAuthorLine ? content : player.getName(),
-                        null,
-                        "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
-        builder.setColor(java.awt.Color.GREEN);
-        if (!contentAuthorLine) {
-            builder.setDescription(content);
+    private @Nullable String mcplayercounter(){
+        ArrayList<Player> list = new ArrayList<>(this.getServer().getOnlinePlayers());
+        for (Player player : list) {
+            if (player.isOnline()){
+                i++;
+            }
         }
-        chatChannel.sendMessageEmbeds(builder.build()).queue();
+        return null;
     }
-    private void sendadvancementmsg(Player player, String content, boolean contentAuthorLine) {
+
+    private void sendMessage(Player player, String content) {
+        if (chatChannel == null) return;
+        EmbedBuilder builder = new EmbedBuilder().setAuthor(content, null,
+                            "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1")
+                    .setFooter(mcplayercounter());
+            builder.setColor(java.awt.Color.GREEN);
+            chatChannel.sendMessageEmbeds(builder.build()).queue();
+    }
+    private void sendadvancementmsg(Player player, String content) {
         if (chatChannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor(contentAuthorLine ? content : player.getName(),
+                .setAuthor(content,
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.CYAN);
-        if (!contentAuthorLine) {
-            builder.setDescription(content);
-        }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
-    private void senddeathmsg(Player player, String content, boolean contentAuthorLine){
+    private void senddeathmsg(Player player, String content){
         if (chatChannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor(contentAuthorLine ? content : player.getName(),
+                .setAuthor(content,
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.RED);
-        if (!contentAuthorLine) {
-            builder.setDescription(content);
-        }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
-    private void sendoffmsg(Player player, String content, boolean contentAuthorLine) {
+    private void sendoffmsg(Player player, String content) {
         if (chatChannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor(contentAuthorLine ? content : player.getName(),
+                .setAuthor(content,
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.RED);
-        if (!contentAuthorLine) {
-            builder.setDescription(content);
-        }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
-    private void SendFirstJoinmsg(Player player, String content, boolean contentAuthorLine){
+    private void SendFirstJoinmsg(Player player, String content){
         if (chatChannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor(contentAuthorLine ? content : player.getName(),
+                .setAuthor(content,
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.ORANGE);
-        if (!contentAuthorLine) {
-            builder.setDescription(content);
-        }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
-    private void SendMsg(Player player, String content, boolean contentAuthorLine) {
+    private void SendMsg(Player player, String content) {
         if (chatChannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor(contentAuthorLine ? content : player.getName(),
+                .setAuthor(content,
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.GRAY);
-        if (!contentAuthorLine) {
-            builder.setDescription(content);
-        }
         chatChannel.sendMessageEmbeds(builder.build()).queue();
     }
     public class SpigotListener implements Listener {
@@ -372,38 +409,38 @@ public final class Main extends JavaPlugin {
         public void onFirstJoin(@NotNull PlayerJoinEvent e) {
             Player player = e.getPlayer();
             if (!player.hasPlayedBefore()) {
-                SendFirstJoinmsg(player, player.getName() + " has join the game for the first time!", true);
+                SendFirstJoinmsg(player, player.getName() + " has join the game for the first time!");
             }
         }
         @EventHandler
         public void onChat(@NotNull AsyncPlayerChatEvent e) {
             Player player = e.getPlayer();
             String message = e.getMessage().toLowerCase();
-            SendMsg(player, e.getPlayer().getName() + " >> " + " "  + message , true);
+            SendMsg(player, e.getPlayer().getName() + " >> " + " "  + message);
         }
         @EventHandler
         public void onJoin(@NotNull PlayerJoinEvent e){
             Player player = e.getPlayer();
-            sendMessage(player, e.getPlayer().getName() + " joined the game.", true);
+            sendMessage(player, e.getPlayer().getName() + " joined the game.");
         }
         @EventHandler
         public void onQuit(@NotNull PlayerQuitEvent e){
             Player player = e.getPlayer();
-            sendoffmsg(e.getPlayer(), player.getName() + " left the game.", true);
+            sendoffmsg(e.getPlayer(), player.getName() + " left the game.");
         }
         @EventHandler
         public void onDeath(@NotNull PlayerDeathEvent e){
             Player p = e.getEntity();
             String deathMessage = e.getDeathMessage() == null ? p.getName() + " died." : e.getDeathMessage();
-            senddeathmsg(p, deathMessage, true);
+            senddeathmsg(p, deathMessage);
         }
         @EventHandler
         public void onAdvancement(@NotNull PlayerAdvancementDoneEvent e){
             Player player = e.getPlayer();
             String advancementKey  = e.getAdvancement().getKey().getKey();
             String display = advancementToDisplayMap.get(advancementKey);
-            if(display == null ) return;
-            sendadvancementmsg(player, player.getName() + " has made the advancement ["+ display + "]", true);
+            if (display == null ) return;
+            sendadvancementmsg(player, player.getName() + " has made the advancement ["+ display + "]");
         }
     }
     public final class DiscordListener extends ListenerAdapter {
@@ -416,10 +453,6 @@ public final class Main extends JavaPlugin {
             String message = e.getMessage().getContentDisplay();
             Bukkit.broadcastMessage(ChatColor.BOLD + "<" + member.getEffectiveName() + ">" + ChatColor.GRAY + " " + message);
         }
-    }
-    @Contract("_ -> new")
-    private @NotNull String Color(String s) {
-        return ChatColor.translateAlternateColorCodes('&', s);
     }
     public static String getPREFIX() {
         return PREFIX;

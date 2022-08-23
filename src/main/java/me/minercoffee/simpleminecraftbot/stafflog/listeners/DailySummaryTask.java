@@ -10,12 +10,10 @@ import java.util.*;
 
 
 public class DailySummaryTask extends BukkitRunnable {
-
     private final Main plugin;
-
-
     public DailySummaryTask(Main plugin) {
         this.plugin = plugin;
+
     }
 
     @Override
@@ -28,11 +26,12 @@ public class DailySummaryTask extends BukkitRunnable {
                 StringBuilder toSend = new StringBuilder();
                 for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
                     OfflinePlayer player = Bukkit.getServer().getOfflinePlayer(uuid);
+                    if (player == null) return;
                     if (player.getPlayer().hasPermission("illusive.staff")) return;
                     toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
                 }
                 System.out.println(toSend);
-                Main.getInstance().sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
+                plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
             } catch (Exception e) {
                 e.printStackTrace();
             }
