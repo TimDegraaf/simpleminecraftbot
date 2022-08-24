@@ -123,8 +123,6 @@ public class PlayerLogListener implements Listener, TabExecutor {
             long loginTime = 0;
             if (map != null) {
                 loginTime = map.get(p.getUniqueId());
-            }
-            if (map != null) {
                 map.remove(p.getUniqueId());
             }
             FileConfiguration config = Main.getInstance().getConfig();

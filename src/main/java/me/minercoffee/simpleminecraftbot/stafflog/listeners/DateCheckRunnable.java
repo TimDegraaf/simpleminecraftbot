@@ -38,7 +38,7 @@ public class DateCheckRunnable extends BukkitRunnable {
                     Main.getInstance().getConfig().set(key, null);
                 }
                 Main.getInstance().saveConfig();
-                Main.AdvancementsMsg();
+                Main.ConfigUpdater();
                 plugin.saveConfig();
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();

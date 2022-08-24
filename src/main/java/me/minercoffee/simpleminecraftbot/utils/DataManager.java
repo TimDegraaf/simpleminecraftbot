@@ -3,7 +3,6 @@ package me.minercoffee.simpleminecraftbot.utils;
 import me.minercoffee.simpleminecraftbot.Main;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,15 +13,16 @@ public class DataManager {
     private final Main plugin;
     private FileConfiguration dataConfig = null;
     private File configFile = null;
+
     public DataManager(Main plugin){
         this.plugin = plugin;
         //saves/initializes
         saveDefaultConfig();
-        saveConfig();
     }
+
     public void reloadConfig(){
-        if(this.configFile == null)
-            this.configFile = new File(this.plugin.getDataFolder(), "config.yml");
+        if(this.configFile == null) return;
+        this.configFile = new File(this.plugin.getDataFolder(), "config.yml");
         this.dataConfig = YamlConfiguration.loadConfiguration(this.configFile);
         InputStream defaultStream = this.plugin.getResource("config.yml");
         if(defaultStream != null){

@@ -26,7 +26,6 @@ public class DailySummaryTask extends BukkitRunnable {
                 StringBuilder toSend = new StringBuilder();
                 for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
                     OfflinePlayer player = Bukkit.getServer().getOfflinePlayer(uuid);
-                    if (player == null) return;
                     if (player.getPlayer().hasPermission("illusive.staff")) return;
                     toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
                 }

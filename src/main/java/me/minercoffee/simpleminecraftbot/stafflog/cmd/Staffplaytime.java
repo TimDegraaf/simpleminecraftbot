@@ -42,7 +42,7 @@ public class Staffplaytime implements TabExecutor {
                     plugin.playerLogListener.saveAllPlayers();
                     Main.getInstance().getConfig().set(key, null);
                     plugin.saveConfig();
-                    Main.AdvancementsMsg();
+                    Main.ConfigUpdater();
                 }
             }
         } else if (sender instanceof Player player){
@@ -66,7 +66,7 @@ public class Staffplaytime implements TabExecutor {
                         plugin.playerLogListener.saveAllPlayers();
                         Main.getInstance().getConfig().set(key, null);
                         plugin.saveConfig();
-                        Main.AdvancementsMsg();
+                        Main.ConfigUpdater();
 
                     }
                 }

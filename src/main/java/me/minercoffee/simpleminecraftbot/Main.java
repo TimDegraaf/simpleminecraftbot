@@ -1,5 +1,8 @@
 package me.minercoffee.simpleminecraftbot;
 
+import com.jeff_media.updatechecker.UpdateCheckSource;
+import com.jeff_media.updatechecker.UpdateChecker;
+import com.jeff_media.updatechecker.UserAgentBuilder;
 import me.minercoffee.simpleminecraftbot.clearcmd.Clear;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
@@ -8,7 +11,7 @@ import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKManager;
 import me.minercoffee.simpleminecraftbot.stafflog.ontask.MovementChecker;
 import me.minercoffee.simpleminecraftbot.stafflog.staffchat;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
-import me.minercoffee.simpleminecraftbot.ticket.commands;
+import me.minercoffee.simpleminecraftbot.ticket.SetTicketCMD;
 import me.minercoffee.simpleminecraftbot.utils.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -65,10 +68,13 @@ public final class Main extends JavaPlugin {
         this.playerLogListener = new PlayerLogListener(this);
         setInstance(this);
         saveDefaultConfig();
-        String botToken = " ";
+        saveConfig();
+        loadConfig();
+        ServerUtils();
+        String botToken = "";
         try {
-            AdvancementsMsg();
-            jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("With Minecraft Closed!")).setStatus(OnlineStatus.ONLINE)
+            ConfigUpdater();
+            jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
             String chatChannelId = getConfig().getString("chat");
             if (chatChannelId != null) {
@@ -90,7 +96,7 @@ public final class Main extends JavaPlugin {
             if (consolechannl != null){
                 Console = jda.getTextChannelById(consolechannl);
             }
-            String commandid = getConfig().getString("commands");
+            String commandid = getConfig().getString("SetTicketCMD");
             if (commandid != null){
                 commands = jda.getTextChannelById(commandid);
             }
@@ -106,7 +112,7 @@ public final class Main extends JavaPlugin {
             new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             jda.addEventListener(new Clear(this));
             jda.addEventListener(new ButtonListener(this));
-            jda.addEventListener(new commands());
+            jda.addEventListener(new SetTicketCMD());
             jda.addEventListener(new DiscordListener());
             jda.addEventListener(new OnlineStaff(this));
             jda.addEventListener(new DiscordCommandCheckLegacy());
@@ -137,6 +143,36 @@ public final class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AFKListener(this.afkManager), this);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MovementChecker(this.afkManager), 0L, 600L);
     }
+    public void ServerUtils(){
+        int pluginId = 16255;
+        Metrics metrics = new Metrics(this, pluginId);
+        metrics.addCustomChart(new Metrics.SingleLineChart("players", () -> Bukkit.getOnlinePlayers().size()));
+        metrics.addCustomChart(new Metrics.DrilldownPie("java_version", () -> {
+            Map<String, Map<String, Integer>> map = new HashMap<>();
+            String javaVersion = System.getProperty("java.version");
+            Map<String, Integer> entry = new HashMap<>();
+            entry.put(javaVersion, 1);
+            if (javaVersion.startsWith("1.7")) {
+                map.put("Java 1.7", entry);
+            } else if (javaVersion.startsWith("1.8")) {
+                map.put("Java 1.8", entry);
+            } else if (javaVersion.startsWith("1.9")) {
+                map.put("Java 1.9", entry);
+            } else {
+                map.put("Other", entry);
+            }
+            return map;
+        }));
+        new UpdateChecker(this, UpdateCheckSource.CUSTOM_URL, "https://github.com/MinerCoffee/simpleminecraftbot/blob/master/src/main/resources/latestversion.txt")
+                .setDownloadLink("https://discord.com/channels/941600403513040916/941600403513040919")
+                .setChangelogLink("https://discord.gg/5nDbUY2qFy")
+                .setDonationLink("https://www.paypal.com/paypalme/MinerCoffee")
+                .setNotifyOpsOnJoin(true)
+                .setUserAgent(new UserAgentBuilder().addPluginNameAndVersion())
+                .setColoredConsoleOutput(true)
+                .checkEveryXHours(24)
+                .checkNow();
+    }
     private void purgeMessages (TextChannel channel) {
         MessageHistory history = new MessageHistory(channel);
         List<Message> msg;
@@ -149,7 +185,8 @@ public final class Main extends JavaPlugin {
             e.printStackTrace();
         }
     }
-    public static void AdvancementsMsg(){
+    public static void ConfigUpdater(){
+
         instance.getConfig().addDefault("advancementMap", true);
         instance.getConfig().addDefault("advancementMap.story/mine_stone", "Stone Age");
         instance.getConfig().addDefault("advancementMap.story/upgrade_tools", "Getting an Upgrade");
@@ -209,8 +246,11 @@ public final class Main extends JavaPlugin {
         instance.getConfig().addDefault("staffchat", "1008575207008653452");
         instance.getConfig().addDefault("console", "1008797203676012647");
         instance.getConfig().addDefault("Status-enable", "true");
-        instance.getConfig().addDefault("commands", "966782672259129424");
         instance.saveConfig();
+    }
+    public void loadConfig(){
+        getConfig().options().copyDefaults(true);
+        saveConfig();
     }
     @Override
     public void onDisable() {
@@ -224,7 +264,6 @@ public final class Main extends JavaPlugin {
     }
     public void sendstaffonline(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
         if (staffchannel == null) return;
-
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(contentAuthorLine ? content : player.getName(),
                         null,
