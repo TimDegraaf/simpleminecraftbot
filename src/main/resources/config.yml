@@ -1,31 +1,15 @@
-advancementMap:
-  "adventure/throw_tident": "Throwaway Joke"
-  "adventure/shoot_arrow": "Take Aim"
-  "adventure/kill_all_mobs": "Monsters Hunted"
-  "adventure/totem_of_undying": "Postmortal"
-  "adventure/summon_iron_golem": "Hired Help"
-  "adventure/two_birds_one_arrow": "Two Birds, One Arrow"
-  "adventure/whos_the_pillager_now": "Who's the Pillager Now?"
-  "adventure/arbalistic": "Arbalistic"
-  "adventure/adventuring_time": "Adeventuring Time"
-  "adventure/very_very_frightening": "Very Very Frightening"
-  "adventure/sniper_duel": "Sniper Duel"
-  "adventure/bullseye": "Bullseye"
-  "husbandry/safely_harvest_honey": "Bee Our Guest"
-  "husbandry/breed_an_animal": "The Parrots and the Bats"
-  "husbandry/tame_an_animal": "Best Friends Forever"
-  "husbandry/fishy_business": "Fishy Business"
-  "husbandry/silk_touch_nest": "Total Beelocation"
-  "husbandry/plant_seed": "A Seedy Place"
-  "husbandry/breed_all_animals": "Two by Two"
-  "husbandry/complete_catalogue": "A Complete Catalogue"
-  "husbandry/tactical_fishing": "Tactial Fishing"
-  "husbandry/balanced_diet": "A Balanced Diet"
-  "husbandry/obtain_netherite_hoe": "Serious Dedication"
-  "husbandry/allay_deliver_cake_to_note_block": "Birthday Song"
-  "husbandry/tadpole_in_a_bucket": "Bukkit Bukkit"
-  "adventure/kill_mob_near_sculk_catalyst": "It Spreads"
-  "adventure/avoid_vibration": "Sneak 100"
-  "husbandry/leash_all_frog_variants": "When the Squad Hops into Town"
-  "husbandry/froglights": "With Our Powers Combined!"
-  "husbandry/allay_deliver_item_to_player": "You've Got a Friend in Me"
+
+staffplaytime: '965844461772996628' #staff channel for playtime
+serverstatus: '979621646870650960' #server-status channel where it sends a message in the channel for schedule restarts.
+ingame-chat: '966782706165882951' #ingame chat from minecraft
+staffchat: '1008575207008653452' #ingame chat from minecraft that the staff can send messages from discord and server to communicate.
+commands: '966782672259129424' #commands channel id
+category_id: '975975706544717824' #discord category id used for the ticket system
+roles_player_id: '944353114138484756' #player role id
+roles_staff_id: '1011802898423873667' #staff role id
+roles_owner_id: '944352076480278558' #owner role id
+guild_id: '941600403513040916' #discord server id
+Status_enable: true
+permissions:
+  - simpleminecraftbot.staff
+  - simpleminecraftbot.admin

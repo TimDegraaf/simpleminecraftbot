@@ -4,15 +4,16 @@ import me.minercoffee.simpleminecraftbot.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import java.util.*;
+
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.getStaffplaytimeConfig;
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.savestaffplaytime;
 
 public class DateCheckRunnable extends BukkitRunnable {
     private final Main plugin;
     public DateCheckRunnable(Main plugin) {
         this.plugin = plugin;
     }
-
     @SuppressWarnings("deprecation")
     @Override
     public void run() {
@@ -24,8 +25,8 @@ public class DateCheckRunnable extends BukkitRunnable {
             // discord stuff
             StringBuilder toSend = new StringBuilder();
             try {
-                for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
-                    toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+                for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
+                    toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                 }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
@@ -33,22 +34,16 @@ public class DateCheckRunnable extends BukkitRunnable {
             System.out.println(toSend);
             plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
             try {
-                // clear the config
-                for (String key : Main.getInstance().getConfig().getKeys(false)) {
-                    Main.getInstance().getConfig().set(key, null);
+                for (String key : getStaffplaytimeConfig().getKeys(false)) {
+                    getStaffplaytimeConfig().set(key, null);
+                    savestaffplaytime();
                 }
-                Main.getInstance().saveConfig();
-                Main.ConfigUpdater();
-                plugin.saveConfig();
+
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
-            }
-            try {
-                cancel();
-            } catch (IllegalStateException e){
-                e.printStackTrace();
-            }
 
+
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 public class Clear extends ListenerAdapter {
     private final Main plugin;
@@ -28,8 +29,10 @@ public class Clear extends ListenerAdapter {
             if (e.getAuthor().isBot()) return;
             if (e.getMember() != null) return;
             String[] args = e.getMessage().getContentRaw().split(" ");
-            String roles = String.valueOf((e.getMember()).getRoles());
-            if  ((roles != null && roles.contains("staff")) || roles != null && roles.contains("Owner")) {
+            String ownerRole = plugin.getConfig().getString("roles_owner_id");
+            String staffRole = plugin.getConfig().getString("roles_staff_id");
+            String role = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
+            if (ownerRole != null && (staffRole != null && role.contains(staffRole) || role != null && role.contains(ownerRole))) {
                 if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
                     if (args.length <= 2) {
                         sendErrorMessage(e.getChannel().asTextChannel(), e.getMember());

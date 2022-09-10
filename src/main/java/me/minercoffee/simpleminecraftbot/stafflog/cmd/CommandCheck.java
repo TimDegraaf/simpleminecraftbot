@@ -2,6 +2,7 @@ package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
 import games.negative.framework.message.Message;
 import me.minercoffee.simpleminecraftbot.Main;
+import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -25,7 +26,7 @@ public class CommandCheck implements CommandExecutor {
         return true;
     }
     private @NotNull String getPlayTime(@NotNull OfflinePlayer p) {
-        FileConfiguration staff = instance.getConfig();
+        FileConfiguration staff = DataManager.getStaffplaytimeConfig();
         long time = staff.getLong(String.valueOf(p.getUniqueId()));
         return instance.convertTime(time);
     }

@@ -22,7 +22,7 @@ public class reloadcmd implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = (Player) sender;
         if (command.getName().equalsIgnoreCase("sbreload")) {
-            if (p.isOp() | p.hasPermission("simpleminecraftbot.admin")) {
+            if (p.isOp() || p.hasPermission("simpleminecraftbot.admin")) {
                 Main.instance.reloadConfig();
                 p.sendMessage(ColorMsg.color("&c&l Reloaded the config"));
                 System.out.println(ColorMsg.color("&c&l Reloaded the config"));

@@ -5,15 +5,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import java.util.*;
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.getStaffplaytimeConfig;
 
 
 public class DailySummaryTask extends BukkitRunnable {
     private final Main plugin;
+
     public DailySummaryTask(Main plugin) {
         this.plugin = plugin;
-
     }
 
     @Override
@@ -24,19 +24,14 @@ public class DailySummaryTask extends BukkitRunnable {
         if (calendar.get(Calendar.HOUR_OF_DAY) == 22) {
             try {
                 StringBuilder toSend = new StringBuilder();
-                for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
+                for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
                     OfflinePlayer player = Bukkit.getServer().getOfflinePlayer(uuid);
-                    if (player.getPlayer().hasPermission("illusive.staff")) return;
-                    toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+                    if (player.getPlayer().hasPermission("simplebotminecraft.staff")  || player.isOp()) return;
+                    toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                 }
                 System.out.println(toSend);
                 plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
             } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                cancel();
-            } catch (IllegalStateException e){
                 e.printStackTrace();
             }
         }

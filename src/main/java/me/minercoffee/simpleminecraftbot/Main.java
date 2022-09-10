@@ -6,9 +6,6 @@ import com.jeff_media.updatechecker.UserAgentBuilder;
 import me.minercoffee.simpleminecraftbot.clearcmd.Clear;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
-import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKListener;
-import me.minercoffee.simpleminecraftbot.stafflog.ontask.AFKManager;
-import me.minercoffee.simpleminecraftbot.stafflog.ontask.MovementChecker;
 import me.minercoffee.simpleminecraftbot.stafflog.staffchat;
 import me.minercoffee.simpleminecraftbot.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.ticket.SetTicketCMD;
@@ -39,69 +36,68 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
+
 public final class Main extends JavaPlugin {
     public PlayerLogListener playerLogListener;
-    public AFKManager afkManager;
-    public HashMap<UUID, Long> map = new HashMap<>();
+    public static HashMap<UUID, Long> map = new HashMap<>();
     public DataManager data;
     public static void setInstance(Main instance) {
         Main.instance = instance;
     }
     public static Main instance;
     public final Map<String, String> advancementToDisplayMap = new HashMap<>();
+    public final Map<String, String> staffplaytimeToDisplayMap = new HashMap<>();
     public static JDA jda;
     public TextChannel chatChannel;
     public TextChannel staffchannel;
     public TextChannel ServerStatuschannel;
     public TextChannel StaffChat;
-    public TextChannel Console;
     public TextChannel commands;
+    public TextChannel DiscordMainchat;
     int i = 1;
     private static final String PREFIX = "!";
     public static Main getInstance() {
         return instance;
     }
+    @SuppressWarnings("deprecation")
     @Override
     public void onEnable() {
         super.onEnable();
-        this.afkManager = new AFKManager();
         this.playerLogListener = new PlayerLogListener(this);
         setInstance(this);
         saveDefaultConfig();
         saveConfig();
         loadConfig();
         ServerUtils();
+        DataManager.StartupAdvancementConfig();
+        StaffplayimeUpdater();
         String botToken = "";
         try {
             ConfigUpdater();
+            AdvancementsUpdater();
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
             String chatChannelId = getConfig().getString("chat");
             if (chatChannelId != null) {
                 chatChannel = jda.getTextChannelById(chatChannelId);
             }
-            String ServerStatus = getConfig().getString("serverstatus");
-            if (ServerStatus != null) {
-                ServerStatuschannel =jda.getTextChannelById(ServerStatus);
-            }
-            String staffchatid = getConfig().getString("staffchat");
-            if (staffchatid != null){
-                StaffChat = jda.getTextChannelById(staffchatid);
+            String DiscordMainChannelId = getConfig().getString("Main-chat");
+            if (DiscordMainChannelId != null) {
+                DiscordMainchat = jda.getTextChannelById(DiscordMainChannelId);
             }
             String staffplaytimechannel = getConfig().getString("staffplaytime");
             if (staffplaytimechannel != null) {
                 staffchannel = jda.getTextChannelById(staffplaytimechannel);
             }
-            String consolechannl = getConfig().getString("console");
-            if (consolechannl != null){
-                Console = jda.getTextChannelById(consolechannl);
-            }
-            String commandid = getConfig().getString("SetTicketCMD");
-            if (commandid != null){
+            long commandid = Long.parseLong(Objects.requireNonNull(getConfig().getString("commands")));
                 commands = jda.getTextChannelById(commandid);
+            Guild guildid = jda.getGuildById(Objects.requireNonNull(getConfig().getString("guild_id")));
+            if (guildid != null){
+                guildid.upsertCommand("sup", "say wassup to someone").queue();
             }
             new staffchat(this);
-            jda.addEventListener(new Discordhelp(), new DiscordBotPingEvent(),  new staffchat(this));
+            jda.addEventListener(new Discordhelp(this), new DiscordBotPingEvent(this),  new staffchat(this));
             getCommand("staffcheck").setExecutor(new CommandCheck(this));
             getCommand("staffplaytime").setExecutor(new Staffplaytime(this));
             getCommand("staff").setExecutor(new PlayerLogListener(instance));
@@ -110,14 +106,14 @@ public final class Main extends JavaPlugin {
             new DateCheckRunnable(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60 * 20L);
             new DailySummaryTask(this).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
-            jda.addEventListener(new Clear(this));
+            jda.addEventListener(new Clear(this), new BotCommands(), new ModalListeners());
             jda.addEventListener(new ButtonListener(this));
             jda.addEventListener(new SetTicketCMD());
             jda.addEventListener(new DiscordListener());
             jda.addEventListener(new OnlineStaff(this));
-            jda.addEventListener(new DiscordCommandCheckLegacy());
+            jda.addEventListener(new DiscordCommandCheckLegacy(this));
+            getCommand("ping").setExecutor(new Ping());
             new reloadcmd(this);
-            onTask();
             getServer().getPluginManager().registerEvents(new SpigotListener(), this);
             getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
             getCommand("sbreload").setExecutor(new reloadcmd(this));
@@ -125,7 +121,17 @@ public final class Main extends JavaPlugin {
             this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
             ServerisOnline(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.RED);
             //advancement config getting the names.
-            ConfigurationSection advancementMap = getConfig().getConfigurationSection("advancementMap");
+            ConfigurationSection staffplaytimeMap = getStaffplaytimeConfig().getConfigurationSection("staffplaytime");
+            if (staffplaytimeMap != null){
+                try {
+                    for (String key : staffplaytimeMap.getKeys(false)) {
+                        staffplaytimeToDisplayMap.put(key, staffplaytimeMap.getString(key));
+                    }
+                } catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+            ConfigurationSection advancementMap = getadvancementsConfig().getConfigurationSection("advancementMap");
             if (advancementMap != null) {
                 try {
                     for (String key : advancementMap.getKeys(false)) {
@@ -138,10 +144,6 @@ public final class Main extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    public void onTask(){
-        getServer().getPluginManager().registerEvents(new AFKListener(this.afkManager), this);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MovementChecker(this.afkManager), 0L, 600L);
     }
     public void ServerUtils(){
         int pluginId = 16255;
@@ -185,73 +187,112 @@ public final class Main extends JavaPlugin {
             e.printStackTrace();
         }
     }
-    public static void ConfigUpdater(){
-
-        instance.getConfig().addDefault("advancementMap", true);
-        instance.getConfig().addDefault("advancementMap.story/mine_stone", "Stone Age");
-        instance.getConfig().addDefault("advancementMap.story/upgrade_tools", "Getting an Upgrade");
-        instance.getConfig().addDefault("advancementMap.story/smelt_iron", "Acquire Hardware");
-        instance.getConfig().addDefault("advancementMap.story/obtain_armor", "Suit Up");
-        instance.getConfig().addDefault("advancementMap.story/lava_bucket", "Hot Stuff");
-        instance.getConfig().addDefault("advancementMap.story/iron_tools", "Isn't It Iron Pick");
-        instance.getConfig().addDefault("advancementMap.story/deflect_arrow", "Not Today, Thank You");
-        instance.getConfig().addDefault("advancementMap.story/form_obsidian", "Ice Bucket Challenge");
-        instance.getConfig().addDefault("advancementMap.story/mine_diamond", "Diamonds!");
-        instance.getConfig().addDefault("advancementMap.story/enter_the_nether", "We Need To Go Deeper");
-        instance.getConfig().addDefault("advancementMap.story/shiny_gear", "Cover Me With Diamonds");
-        instance.getConfig().addDefault("advancementMap.story/enchant_item", "Enchanter!");
-        instance.getConfig().addDefault("advancementMap.story/cure_zombie_villager", "Zombie Doctor!");
-        instance.getConfig().addDefault("advancementMap.story/follow_ender_eye", "Eye Spy");
-        instance.getConfig().addDefault("advancementMap.story/enter_the_end", "The End?");
-        instance.getConfig().addDefault("advancementMap.nether/return_to_sender", "Return to Sender");
-        instance.getConfig().addDefault("advancementMap.nether/find_bastion", "Those Were the Days");
-        instance.getConfig().addDefault("advancementMap.nether/obtain_ancient_debris", "Hidden in the Depths");
-        instance.getConfig().addDefault("advancementMap.nether/fast_travel", "Subspace Bubble");
-        instance.getConfig().addDefault("advancementMap.nether/find_fortress", "A Terrible Fortress!");
-        instance.getConfig().addDefault("advancementMap.nether/obtain_crying_obsidian", "Who is Cutting Onions?!");
-        instance.getConfig().addDefault("advancementMap.nether/distract_piglin", "Oh Shiny!");
-        instance.getConfig().addDefault("advancementMap.nether/ride_strider", "This Boat Has Legs!");
-        instance.getConfig().addDefault("advancementMap.nether/uneasy_alliance", "Uneasy Alliance!");
-        instance.getConfig().addDefault("advancementMap.nether/loot_bastion", "War Pigs!");
-        instance.getConfig().addDefault("advancementMap.nether/use_lodestone", "Country Lode, Take Me Home");
-        instance.getConfig().addDefault("advancementMap.nether/netherite_armor", "Cover Me in Debris!");
-        instance.getConfig().addDefault("advancementMap.nether/get_wither_skull", "Spooky Scary Skeleton!");
-        instance.getConfig().addDefault("advancementMap.nether/obtain_blaze_rod", "Into Fire!");
-        instance.getConfig().addDefault("advancementMap.nether/charge_respawn_anchor", "Not Quite Nine Lives!");
-        instance.getConfig().addDefault("advancementMap.nether/explore_nether", "Hot Tourist Destinations!");
-        instance.getConfig().addDefault("advancementMap.nether/summon_wither", "Withering Heights");
-        instance.getConfig().addDefault("advancementMap.nether/brew_potion", "Bring Home the Beacon"); //check msg on wiki
-        instance.getConfig().addDefault("advancementMap.nether/create_beacon", "Bring Home the Beacon");
-        instance.getConfig().addDefault("advancementMap.nether/all_potions", "A Furious Cocktail");
-        instance.getConfig().addDefault("advancementMap.nether/create_full_beacon", "Beaconator");
-        instance.getConfig().addDefault("advancementMap.nether/all_effects", "How Did We Get Here?");
-        instance.getConfig().addDefault("advancementMap.end/kill_dragon", "Free the End");
-        instance.getConfig().addDefault("advancementMap.end/dragon_egg", "The Next Generation");
-        instance.getConfig().addDefault("advancementMap.end/enter_end_gateway", "Remote Getaway");
-        instance.getConfig().addDefault("advancementMap.end/respawn_dragon", "The End... Again...");
-        instance.getConfig().addDefault("advancementMap.end/dragon_breath",  "You Need a Mint");
-        instance.getConfig().addDefault("advancementMap.end/find_end_city", "The City at the End of the Game");
-        instance.getConfig().addDefault("advancementMap.end/elytra", "Sky's the Limit");
-        instance.getConfig().addDefault("advancementMap.end/levitate", "Great View From Up Here");
-        instance.getConfig().addDefault("advancementMap.adventure/voluntary_exile", "Voluntary Exile");
-        instance.getConfig().addDefault("advancementMap.adventure/kill_a_mob", "Monster Hunter");
-        instance.getConfig().addDefault("advancementMap.adventure/trade", "What a Deal!");
-        instance.getConfig().addDefault("advancementMap.adventure/honey_block_slide", "Sticky Situation");
-        instance.getConfig().addDefault("advancementMap.adventure/ol_betsy", "Ol' Betsy");
-        instance.getConfig().addDefault("advancementMap.adventure/sleep_in_bed", "Sweet Dreams");
-        instance.getConfig().addDefault("advancementMap.adventure/hero_of_the_village", "Hero of the Village");
+    public void ConfigUpdater(){
         instance.getConfig().addDefault("staffplaytime", "965844461772996628");
         instance.getConfig().addDefault("serverstatus", "979621646870650960");
-        instance.getConfig().addDefault("chat", "966782706165882951");
+        instance.getConfig().addDefault("ingame-chat", "966782706165882951");
         instance.getConfig().addDefault("staffchat", "1008575207008653452");
-        instance.getConfig().addDefault("console", "1008797203676012647");
-        instance.getConfig().addDefault("Status-enable", "true");
+        instance.getConfig().addDefault("commands", "966782672259129424");
+        instance.getConfig().addDefault("category_id", "975975706544717824");
+        instance.getConfig().addDefault("roles_player_id", "944353114138484756");
+        instance.getConfig().addDefault("roles_staff_id", "1011802898423873667");
+        instance.getConfig().addDefault("roles_owner_id", "944352076480278558");
+        instance.getConfig().addDefault("Status_enable", true);
         instance.saveConfig();
+    }
+    public void StaffplayimeUpdater(){
+        getadvancementsConfig().addDefault("staffplaytime", true);
+        savestaffplaytime();
+    }
+    public void AdvancementsUpdater(){
+        getadvancementsConfig().addDefault("advancementMap", true);
+        getadvancementsConfig().addDefault("advancementMap.story/mine_stone", "Stone Age");
+        getadvancementsConfig().addDefault("advancementMap.story/upgrade_tools", "Getting an Upgrade");
+        getadvancementsConfig().addDefault("advancementMap.story/smelt_iron", "Acquire Hardware");
+        getadvancementsConfig().addDefault("advancementMap.story/obtain_armor", "Suit Up");
+        getadvancementsConfig().addDefault("advancementMap.story/lava_bucket", "Hot Stuff");
+        getadvancementsConfig().addDefault("advancementMap.story/iron_tools", "Isn't It Iron Pick");
+        getadvancementsConfig().addDefault("advancementMap.story/deflect_arrow", "Not Today, Thank You");
+        getadvancementsConfig().addDefault("advancementMap.story/form_obsidian", "Ice Bucket Challenge");
+        getadvancementsConfig().addDefault("advancementMap.story/mine_diamond", "Diamonds!");
+        getadvancementsConfig().addDefault("advancementMap.story/enter_the_nether", "We Need To Go Deeper");
+        getadvancementsConfig().addDefault("advancementMap.story/shiny_gear", "Cover Me With Diamonds");
+        getadvancementsConfig().addDefault("advancementMap.story/enchant_item", "Enchanter!");
+        getadvancementsConfig().addDefault("advancementMap.story/cure_zombie_villager", "Zombie Doctor!");
+        getadvancementsConfig().addDefault("advancementMap.story/follow_ender_eye", "Eye Spy");
+        getadvancementsConfig().addDefault("advancementMap.story/enter_the_end", "The End?");
+        getadvancementsConfig().addDefault("advancementMap.nether/return_to_sender", "Return to Sender");
+        getadvancementsConfig().addDefault("advancementMap.nether/find_bastion", "Those Were the Days");
+        getadvancementsConfig().addDefault("advancementMap.nether/obtain_ancient_debris", "Hidden in the Depths");
+        getadvancementsConfig().addDefault("advancementMap.nether/fast_travel", "Subspace Bubble");
+        getadvancementsConfig().addDefault("advancementMap.nether/find_fortress", "A Terrible Fortress");
+        getadvancementsConfig().addDefault("advancementMap.nether/obtain_crying_obsidian", "Who is Cutting Onions");
+        getadvancementsConfig().addDefault("advancementMap.nether/distract_piglin", "Oh Shiny!");
+        getadvancementsConfig().addDefault("advancementMap.nether/ride_strider", "This Boat Has Legs");
+        getadvancementsConfig().addDefault("advancementMap.nether/uneasy_alliance", "Uneasy Alliance");
+        getadvancementsConfig().addDefault("advancementMap.nether/loot_bastion", "War Pigs!");
+        getadvancementsConfig().addDefault("advancementMap.nether/use_lodestone", "Country Lode, Take Me Home");
+        getadvancementsConfig().addDefault("advancementMap.nether/netherite_armor", "Cover Me in Debris!");
+        getadvancementsConfig().addDefault("advancementMap.nether/get_wither_skull", "Spooky Scary Skeleton!");
+        getadvancementsConfig().addDefault("advancementMap.nether/obtain_blaze_rod", "Into Fire!");
+        getadvancementsConfig().addDefault("advancementMap.nether/charge_respawn_anchor", "Not Quite Nine Lives");
+        getadvancementsConfig().addDefault("advancementMap.nether/explore_nether", "Hot Tourist Destinations!");
+        getadvancementsConfig().addDefault("advancementMap.nether/summon_wither", "Withering Heights");
+        getadvancementsConfig().addDefault("advancementMap.nether/brew_potion", "Bring Home the Beacon");
+        getadvancementsConfig().addDefault("advancementMap.nether/create_beacon", "Bring Home the Beacon");
+        getadvancementsConfig().addDefault("advancementMap.nether/all_potions", "A Furious Cocktail");
+        getadvancementsConfig().addDefault("advancementMap.nether/create_full_beacon", "Beaconator");
+        getadvancementsConfig().addDefault("advancementMap.nether/all_effects", "How Did We Get Here?");
+        getadvancementsConfig().addDefault("advancementMap.end/kill_dragon", "Free the End");
+        getadvancementsConfig().addDefault("advancementMap.end/dragon_egg", "The Next Generation");
+        getadvancementsConfig().addDefault("advancementMap.end/enter_end_gateway", "Remote Getaway");
+        getadvancementsConfig().addDefault("advancementMap.end/respawn_dragon", "The End... Again...");
+        getadvancementsConfig().addDefault("advancementMap.end/dragon_breath",  "You Need a Mint");
+        getadvancementsConfig().addDefault("advancementMap.end/find_end_city", "The City at the End of the Game");
+        getadvancementsConfig().addDefault("advancementMap.end/elytra", "Sky's the Limit");
+        getadvancementsConfig().addDefault("advancementMap.end/levitate", "Great View From Up Here");
+        getadvancementsConfig().addDefault("advancementMap.adventure/voluntary_exile", "Voluntary Exile");
+        getadvancementsConfig().addDefault("advancementMap.adventure/kill_a_mob", "Monster Hunter");
+        getadvancementsConfig().addDefault("advancementMap.adventure/trade", "What a Deal!");
+        getadvancementsConfig().addDefault("advancementMap.adventure/honey_block_slide", "Sticky Situation");
+        getadvancementsConfig().addDefault("advancementMap.adventure/ol_betsy", "Ol' Betsy");
+        getadvancementsConfig().addDefault("advancementMap.adventure/sleep_in_bed", "Sweet Dreams");
+        getadvancementsConfig().addDefault("advancementMap.adventure/hero_of_the_village", "Hero of the Village");
+        getadvancementsConfig().addDefault("advancementMap.adventure/throw_tident", "Throwaway Joke");
+        getadvancementsConfig().addDefault("advancementMap.adventure/shoot_arrow", "Take Aim");
+        getadvancementsConfig().addDefault("advancementMap.adventure/kill_all_mobs", "Monsters Hunter");
+        getadvancementsConfig().addDefault("advancementMap.adventure/two_birds_one_arrow", "Two Birds, One Arrow");
+        getadvancementsConfig().addDefault("advancementMap.adventure/totem_of_undying", "Post mortal");
+        getadvancementsConfig().addDefault("advancementMap.adventure/summon_iron_golem", "Hired Help");
+        getadvancementsConfig().addDefault("advancementMap.adventure/whos_the_pillager_now", "Who's the Pillager Now?");
+        getadvancementsConfig().addDefault("advancementMap.adventure/arbalistic", "Arbalistic");
+        getadvancementsConfig().addDefault("advancementMap.adventure/adventuring_time", "Adventuring Time");
+        getadvancementsConfig().addDefault("advancementMap.adventure/very_very_frightening", "Very Very Frightening");
+        getadvancementsConfig().addDefault("advancementMap.adventure/sniper_duel", "Sniper Duel");
+        getadvancementsConfig().addDefault("advancementMap.adventure/bullseye", "Bulls eye");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/safely_harvest_honey", "Bee Our Guest");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/breed_an_animal", "The Parrots and the Bats");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/fishy_business", "Fishy Business");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/silk_touch_nest", "Total Beelocation");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/plant_seed", "A Seedy Place");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/breed_all_animals", "Two by Two");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/complete_catalogue", "A Complete Catalogue");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/tactical_fishing", "Tactial Fishing");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/balanced_diet", "A Balanced Diet");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/obtain_netherite_hoe", "Serious Dedication");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/allay_deliver_cake_to_note_block", "Birthday Song");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/tadpole_in_a_bucket", "Bukkit Bukkit");
+        getadvancementsConfig().addDefault("advancementMap.adventure/kill_mob_near_sculk_catalyst", "It Spreads");
+        getadvancementsConfig().addDefault("advancementMap.adventure/avoid_vibration", "Sneak 100");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/leash_all_frog_variants", "When the Squad Hops into Town");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/froglights", "With Our Powers Combined");
+        getadvancementsConfig().addDefault("advancementMap.husbandry/allay_deliver_item_to_player", "You've Got a Friend in Me");
     }
     public void loadConfig(){
         getConfig().options().copyDefaults(true);
-        saveConfig();
+        instance.saveConfig();
     }
+    @SuppressWarnings("deprecation")
     @Override
     public void onDisable() {
         (new PlayerLogListener(instance)).saveAllPlayers();
@@ -308,7 +349,7 @@ public final class Main extends JavaPlugin {
 
         staffchannel.sendMessageEmbeds(builder.build()).queue();
     }
-    public void sendStaffChatEmbled(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
+    public void sendStaffChatEmbled(OfflinePlayer player, String content, Color ignoredColor) {
         if (StaffChat == null) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(content,
@@ -368,7 +409,7 @@ public final class Main extends JavaPlugin {
 
     public void BotSendEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
         if (ServerStatuschannel != null) {
-            if(this.getConfig().getBoolean("Status-enable")) return;
+            if(this.getConfig().getBoolean("Status_enable")) return;
             EmbedBuilder builder = (new EmbedBuilder()).setAuthor(contentAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1")
                     .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
                     .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true);
@@ -497,7 +538,7 @@ public final class Main extends JavaPlugin {
         return PREFIX;
     }
 
-    public HashMap<UUID, Long> getMap() {
+    public static HashMap<UUID, Long> getMap() {
         return map;
     }
 }

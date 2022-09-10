@@ -1,19 +1,19 @@
 package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
 import me.minercoffee.simpleminecraftbot.Main;
+import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.RemoteConsoleCommandSender;
-import org.bukkit.command.TabExecutor;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.getStaffplaytimeConfig;
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.savestaffplaytime;
 
 public class Staffplaytime implements TabExecutor {
     private final Main plugin;
@@ -22,12 +22,12 @@ public class Staffplaytime implements TabExecutor {
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (sender instanceof RemoteConsoleCommandSender) {
+        if(!(sender instanceof Player player)){
             if (args[0].equalsIgnoreCase("report")) {
                 StringBuilder toSend = new StringBuilder();
                 try {
-                    for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
-                        toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+                    for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
+                        toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                     }
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
@@ -38,20 +38,19 @@ public class Staffplaytime implements TabExecutor {
             }
             if (args[0].equalsIgnoreCase("reset")) {
                 // clear the config
-                for (String key : Main.getInstance().getConfig().getKeys(false)) {
+                for (String key : getStaffplaytimeConfig().getKeys(false)) {
                     plugin.playerLogListener.saveAllPlayers();
-                    Main.getInstance().getConfig().set(key, null);
-                    plugin.saveConfig();
-                    Main.ConfigUpdater();
+                   getStaffplaytimeConfig().set(key, null);
+                   savestaffplaytime();
                 }
             }
-        } else if (sender instanceof Player player){
+        } else {
             if (label.equalsIgnoreCase("staffplaytime") && player.isOp()) {
                 if (args[0].equalsIgnoreCase("report")) {
                     StringBuilder toSend = new StringBuilder();
                     try {
-                        for (String uuid : Main.getInstance().getConfig().getKeys(false)) {
-                            toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(Main.getInstance().getConfig().getLong(uuid))).append("** this week\n");
+                        for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
+                            toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                         }
                     } catch (IllegalArgumentException e) {
                         e.printStackTrace();
@@ -62,11 +61,10 @@ public class Staffplaytime implements TabExecutor {
                 }
                 if (args[0].equalsIgnoreCase("reset")) {
                     // clear the config
-                    for (String key : Main.getInstance().getConfig().getKeys(false)) {
+                    for (String key : getStaffplaytimeConfig().getKeys(false)) {
                         plugin.playerLogListener.saveAllPlayers();
-                        Main.getInstance().getConfig().set(key, null);
-                        plugin.saveConfig();
-                        Main.ConfigUpdater();
+                        getStaffplaytimeConfig().set(key, null);
+                        savestaffplaytime();
 
                     }
                 }

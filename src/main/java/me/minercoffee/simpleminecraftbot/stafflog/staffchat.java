@@ -3,6 +3,7 @@ package me.minercoffee.simpleminecraftbot.stafflog;
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.Bukkit;
@@ -34,7 +35,7 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
             return false;
         }
 
-        if (!(p.hasPermission("illusive.staff"))) {
+        if (!(p.hasPermission("simpleminecraftbot.staff"))) {
             return false;
         }
         String message = String.join(" ", args);
@@ -45,9 +46,9 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
             p.sendMessage(ColorMsg.color("&4Usage&6: &7/staffchat"));
         }
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission("illusive.staff") || staff.isOp()) {
+            if (staff.hasPermission("simpleminecraftbot.staff") || staff.isOp()) {
                 staff.sendMessage(ColorMsg.color("&7[&c&lStaff&7] &8> " + "&4" + staff.getName() + "&6: &b" + message));
-                plugin.sendStaffChatEmbled(staff, staff.getName() + " >> " + " " + message, false, Color.YELLOW);
+                plugin.sendStaffChatEmbled(staff, staff.getName() + " >> " + " " + message, Color.YELLOW);
             }
         }
         return true;
@@ -64,12 +65,13 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
     }
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        if (!e.getChannel().equals(plugin.StaffChat)) return;
+        TextChannel staffchat = plugin.StaffChat;
+        if (!e.getChannel().equals(staffchat)) return;
         Member member = e.getMember();
         if (member == null || member.getUser().isBot()) return;
        if (member.hasPermission()) return;
        for (Player staff : Bukkit.getOnlinePlayers()) {
-           if (staff.hasPermission("illusive.staff") || staff.isOp()) {
+           if (staff.hasPermission("simpleminecraftbot.staff") || staff.isOp()) {
                String message = e.getMessage().getContentDisplay();
                staff.sendMessage(ChatColor.BOLD + "<" + member.getEffectiveName() + ">" + ChatColor.GRAY + " " + message);
            }
