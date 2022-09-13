@@ -38,6 +38,7 @@ public class DateCheckRunnable extends BukkitRunnable {
                     getStaffplaytimeConfig().set(key, null);
                     savestaffplaytime();
                 }
+                savestaffplaytime();
 
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();

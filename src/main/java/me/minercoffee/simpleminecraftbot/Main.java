@@ -39,6 +39,10 @@ import java.util.List;
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
 
 public final class Main extends JavaPlugin {
+    //TODO
+    // Fixed staff time from not saving while quiting, joining, or restarting
+    //TODO
+    // Add custom Messages in ServerStatus fields
     public PlayerLogListener playerLogListener;
     public static HashMap<UUID, Long> map = new HashMap<>();
     public DataManager data;
@@ -47,14 +51,12 @@ public final class Main extends JavaPlugin {
     }
     public static Main instance;
     public final Map<String, String> advancementToDisplayMap = new HashMap<>();
-    public final Map<String, String> staffplaytimeToDisplayMap = new HashMap<>();
     public static JDA jda;
     public TextChannel chatChannel;
-    public TextChannel staffchannel;
+    public TextChannel staffplaytimechannel;
     public TextChannel ServerStatuschannel;
-    public TextChannel StaffChat;
-    public TextChannel commands;
-    public TextChannel DiscordMainchat;
+    public TextChannel ingamestaffchatchannel;
+    public TextChannel commandschannel;
     int i = 1;
     private static final String PREFIX = "!";
     public static Main getInstance() {
@@ -78,20 +80,25 @@ public final class Main extends JavaPlugin {
             AdvancementsUpdater();
             jda = JDABuilder.createDefault(botToken).setActivity(Activity.playing("Minecraft")).setStatus(OnlineStatus.ONLINE)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES).build().awaitReady();
-            String chatChannelId = getConfig().getString("chat");
+            String chatChannelId = getConfig().getString("ingame-chat");
             if (chatChannelId != null) {
                 chatChannel = jda.getTextChannelById(chatChannelId);
             }
-            String DiscordMainChannelId = getConfig().getString("Main-chat");
-            if (DiscordMainChannelId != null) {
-                DiscordMainchat = jda.getTextChannelById(DiscordMainChannelId);
+            String ingamestaffchatid = getConfig().getString("staffchat");
+            if (ingamestaffchatid != null){
+                ingamestaffchatchannel = jda.getTextChannelById(ingamestaffchatid);
             }
-            String staffplaytimechannel = getConfig().getString("staffplaytime");
-            if (staffplaytimechannel != null) {
-                staffchannel = jda.getTextChannelById(staffplaytimechannel);
+            String ServerStatusid = getConfig().getString("serverstatus");
+            if (ServerStatusid != null){
+                System.out.println("testa");
+                ServerStatuschannel = jda.getTextChannelById(ServerStatusid);
+            }
+            String staffplaytimechannelid = getConfig().getString("staffplaytime");
+            if (staffplaytimechannelid != null) {
+                staffplaytimechannel = jda.getTextChannelById(staffplaytimechannelid);
             }
             long commandid = Long.parseLong(Objects.requireNonNull(getConfig().getString("commands")));
-                commands = jda.getTextChannelById(commandid);
+                commandschannel = jda.getTextChannelById(commandid);
             Guild guildid = jda.getGuildById(Objects.requireNonNull(getConfig().getString("guild_id")));
             if (guildid != null){
                 guildid.upsertCommand("sup", "say wassup to someone").queue();
@@ -118,19 +125,9 @@ public final class Main extends JavaPlugin {
             getCommand("updatechecker").setExecutor(new UpdateCheckCommand());
             getCommand("sbreload").setExecutor(new reloadcmd(this));
             this.data = new DataManager(this);
-            this.BotSendEmbed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
+            this.ServerRestartingOn(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.GREEN);
             ServerisOnline(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.RED);
             //advancement config getting the names.
-            ConfigurationSection staffplaytimeMap = getStaffplaytimeConfig().getConfigurationSection("staffplaytime");
-            if (staffplaytimeMap != null){
-                try {
-                    for (String key : staffplaytimeMap.getKeys(false)) {
-                        staffplaytimeToDisplayMap.put(key, staffplaytimeMap.getString(key));
-                    }
-                } catch (Exception ex){
-                    ex.printStackTrace();
-                }
-            }
             ConfigurationSection advancementMap = getadvancementsConfig().getConfigurationSection("advancementMap");
             if (advancementMap != null) {
                 try {
@@ -188,15 +185,15 @@ public final class Main extends JavaPlugin {
         }
     }
     public void ConfigUpdater(){
-        instance.getConfig().addDefault("staffplaytime", "965844461772996628");
-        instance.getConfig().addDefault("serverstatus", "979621646870650960");
-        instance.getConfig().addDefault("ingame-chat", "966782706165882951");
-        instance.getConfig().addDefault("staffchat", "1008575207008653452");
-        instance.getConfig().addDefault("commands", "966782672259129424");
-        instance.getConfig().addDefault("category_id", "975975706544717824");
-        instance.getConfig().addDefault("roles_player_id", "944353114138484756");
-        instance.getConfig().addDefault("roles_staff_id", "1011802898423873667");
-        instance.getConfig().addDefault("roles_owner_id", "944352076480278558");
+        instance.getConfig().addDefault("staffplaytime", "");
+        instance.getConfig().addDefault("serverstatus", "");
+        instance.getConfig().addDefault("ingame-chat", "");
+        instance.getConfig().addDefault("staffchat", "");
+        instance.getConfig().addDefault("commandschannel", "");
+        instance.getConfig().addDefault("category_id", "");
+        instance.getConfig().addDefault("roles_player_id", "");
+        instance.getConfig().addDefault("roles_staff_id", "");
+        instance.getConfig().addDefault("roles_owner_id", "");
         instance.getConfig().addDefault("Status_enable", true);
         instance.saveConfig();
     }
@@ -297,14 +294,15 @@ public final class Main extends JavaPlugin {
     public void onDisable() {
         (new PlayerLogListener(instance)).saveAllPlayers();
         try {
-            BotisOfflineembed(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is offline.", true, Color.RED);
+            ServerRestartingOff(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is offline.", true, Color.RED);
             Serverisoffline(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is Restarting.", true, Color.RED);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
     public void sendstaffonline(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
-        if (staffchannel == null) return;
+        if (staffplaytimechannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(contentAuthorLine ? content : player.getName(),
                         null,
@@ -316,10 +314,10 @@ public final class Main extends JavaPlugin {
         LocalDate ld = LocalDate.now();
         builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
 
-        staffchannel.sendMessageEmbeds(builder.build()).queue();
+        staffplaytimechannel.sendMessageEmbeds(builder.build()).queue();
     }
     public void senddtaffoffline(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
-        if (staffchannel == null) return;
+        if (staffplaytimechannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(contentAuthorLine ? content : player.getName(),
                         null,
@@ -331,10 +329,10 @@ public final class Main extends JavaPlugin {
         LocalDate ld = LocalDate.now();
         builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
 
-        staffchannel.sendMessageEmbeds(builder.build()).queue();
+        staffplaytimechannel.sendMessageEmbeds(builder.build()).queue();
     }
     public void sendStaffCurrentTime(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
-        if (staffchannel == null) return;
+        if (staffplaytimechannel == null) return;
 
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(contentAuthorLine ? content : player.getName(),
@@ -347,19 +345,18 @@ public final class Main extends JavaPlugin {
         LocalDate ld = LocalDate.now();
         builder.setFooter(ld.getDayOfMonth() + "/" + ld.getMonthValue() + "/" + ld.getYear() + " (day/month/year)");
 
-        staffchannel.sendMessageEmbeds(builder.build()).queue();
+        staffplaytimechannel.sendMessageEmbeds(builder.build()).queue();
     }
     public void sendStaffChatEmbled(OfflinePlayer player, String content, Color ignoredColor) {
-        if (StaffChat == null) return;
+        if (ingamestaffchatchannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .setAuthor(content,
                         null,
                         "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
         builder.setColor(java.awt.Color.YELLOW);
-        StaffChat.sendMessageEmbeds(builder.build()).queue();
+        ingamestaffchatchannel.sendMessageEmbeds(builder.build()).queue();
     }
-    public void BotisOfflineembed(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
-        if (ServerStatuschannel == null) return;
+    public void ServerRestartingOff(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
         if(this.getConfig().getBoolean("Status-enable")) return;
         EmbedBuilder builder = new EmbedBuilder()
                 .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
@@ -374,6 +371,22 @@ public final class Main extends JavaPlugin {
         ServerStatuschannel.sendMessageEmbeds(builder.build()).queue();
         purgeMessages(ServerStatuschannel);
     }
+    public void ServerRestartingOn(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
+        if(this.getConfig().getBoolean("Status-enable")) return;
+        EmbedBuilder builder = new EmbedBuilder()
+                .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
+                .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true)
+                .setAuthor(contentAuthorLine ? content : player.getName(),
+                        null,
+                        "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1");
+        builder.setColor(java.awt.Color.GREEN);
+        if (!contentAuthorLine) {
+            builder.setDescription(content);
+        }
+        ServerStatuschannel.sendMessageEmbeds(builder.build()).queue();
+        purgeMessages(ServerStatuschannel);
+    }
+
     public void Serverisoffline(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
         if (chatChannel == null) return;
         EmbedBuilder builder = new EmbedBuilder()
@@ -407,20 +420,6 @@ public final class Main extends JavaPlugin {
         return hours + " hours, " + minutes + " minutes and " + seconds + " seconds";
     }
 
-    public void BotSendEmbed(OfflinePlayer player, String content, boolean contentAuthorLine, Color ignoredColor) {
-        if (ServerStatuschannel != null) {
-            if(this.getConfig().getBoolean("Status_enable")) return;
-            EmbedBuilder builder = (new EmbedBuilder()).setAuthor(contentAuthorLine ? content : player.getName(), null, "https://crafatar.com/avatars/" + player.getUniqueId() + "?overlay=1")
-                    .addField("Server Restart Schedule (PST)", "1am, 5am, 9am, 1pm, 5pm, 9pm, 1am", true)
-                    .addField("Time Converter", "https://www.timeanddate.com/worldclock/converter.html", true);
-            builder.setColor(java.awt.Color.GREEN);
-            if (!contentAuthorLine) {
-                builder.setDescription(content);
-            }
-            ServerStatuschannel.sendMessageEmbeds(builder.build(), new MessageEmbed[0]).queue();
-            purgeMessages(ServerStatuschannel);
-        }
-    }
     private @Nullable String mcplayercounter(){
         ArrayList<Player> list = new ArrayList<>(this.getServer().getOnlinePlayers());
         for (Player player : list) {

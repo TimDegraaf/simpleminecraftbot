@@ -35,8 +35,8 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
             return false;
         }
 
-        if (!(p.hasPermission("simpleminecraftbot.staff"))) {
-            return false;
+        if ((p.hasPermission("simpleminecraftbot.staff"))) {
+            return true;
         }
         String message = String.join(" ", args);
         if (args.length < 1) {
@@ -65,7 +65,7 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
     }
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        TextChannel staffchat = plugin.StaffChat;
+        TextChannel staffchat = plugin.ingamestaffchatchannel;
         if (!e.getChannel().equals(staffchat)) return;
         Member member = e.getMember();
         if (member == null || member.getUser().isBot()) return;

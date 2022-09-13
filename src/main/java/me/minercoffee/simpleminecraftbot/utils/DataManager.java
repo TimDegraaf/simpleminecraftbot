@@ -103,16 +103,18 @@ public class DataManager {
         return staffplaytimeConfig;
     }
     public static void ReloadStaffplaytime(){
-        AdvancementsFile = new File(Main.getInstance().getDataFolder(), "staffplaytime.yml");
-        AdvancementsConfig = YamlConfiguration.loadConfiguration(AdvancementsFile);
+        staffplaytimeFile = new File(Main.getInstance().getDataFolder(), "staffplaytime.yml");
+        staffplaytimeConfig = YamlConfiguration.loadConfiguration(staffplaytimeFile);
     }
     public static void savestaffplaytime() {
-        if (staffplaytimeFile == null) {
-            staffplaytimeFile= new File(Main.getInstance().getDataFolder(), "staffplaytime.yml");
-        }
-        if (staffplaytimeConfig != null) return;
-        if (!staffplaytimeFile.exists()) {
-            Main.getInstance().saveResource("staffplaytime.yml", false);
+        staffplaytimeFile = new File(Main.getInstance().getDataFolder(), "staffplaytime.yml");
+        staffplaytimeConfig = loadCustomConfig("SimpleMinecraftBot", new File(Main.getInstance().getDataFolder(), "staffplaytime.yml"));
+        try{
+            if (staffplaytimeConfig != null) {
+                staffplaytimeConfig.save(staffplaytimeFile);
+            }
+        }catch (IOException e){
+            System.out.println("Couldn't save file");
         }
     }
 

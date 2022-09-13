@@ -31,6 +31,7 @@ public class Clear extends ListenerAdapter {
             String[] args = e.getMessage().getContentRaw().split(" ");
             String ownerRole = plugin.getConfig().getString("roles_owner_id");
             String staffRole = plugin.getConfig().getString("roles_staff_id");
+            TextChannel commands = plugin.commandschannel;
             String role = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
             if (ownerRole != null && (staffRole != null && role.contains(staffRole) || role != null && role.contains(ownerRole))) {
                 if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
@@ -45,9 +46,9 @@ public class Clear extends ListenerAdapter {
                             for (int i = 3; i < args.length; i++) {
                                 reason.append(args[i]).append(" ");
                             }
-                            log(e.getMember(), args[2], reason.toString(), plugin.commands, target); //channel which the cmd can be executed.
+                            log(e.getMember(), args[2], reason.toString(), commands, target); //channel which the cmd can be executed.
                         } else {
-                            log(e.getMember(), args[2], " ", plugin.commands, target);
+                            log(e.getMember(), args[2], " ", commands, target);
                         }
                     }
                 }

@@ -26,7 +26,7 @@ public class UpdateCheckListener implements Listener {
         if(event.getSuccess() == UpdateCheckSuccess.FAIL) {
             plugin.getLogger().info("it failed, lol");
         } else if(event.getResult() == UpdateCheckResult.NEW_VERSION_AVAILABLE) {
-            plugin.getLogger().info("there is a new version available: "+event.getLatestVersion());
+            plugin.getLogger().info("there is a new version available: " + event.getLatestVersion());
         } else {
             plugin.getLogger().info("you are running the latest version :)");
         }

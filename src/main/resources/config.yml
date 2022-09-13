@@ -1,14 +1,14 @@
 
-staffplaytime: '965844461772996628' #staff channel for playtime
-serverstatus: '979621646870650960' #server-status channel where it sends a message in the channel for schedule restarts.
-ingame-chat: '966782706165882951' #ingame chat from minecraft
-staffchat: '1008575207008653452' #ingame chat from minecraft that the staff can send messages from discord and server to communicate.
-commands: '966782672259129424' #commands channel id
-category_id: '975975706544717824' #discord category id used for the ticket system
-roles_player_id: '944353114138484756' #player role id
-roles_staff_id: '1011802898423873667' #staff role id
-roles_owner_id: '944352076480278558' #owner role id
-guild_id: '941600403513040916' #discord server id
+staffplaytime: '' #staff channel for playtime
+serverstatus: '' #server-status channel where it sends a message in the channel for schedule restarts.
+ingame-chat: '' #ingame chat from minecraft
+staffchat: '' #ingame chat from minecraft that the staff can send messages from discord and server to communicate.
+commands: '' #commands channel id
+category_id: '' #discord category id used for the ticket system
+roles_player_id: '' #player role id
+roles_staff_id: '' #staff role id
+roles_owner_id: '' #owner role id
+guild_id: '' #discord server id
 Status_enable: true
 permissions:
   - simpleminecraftbot.staff

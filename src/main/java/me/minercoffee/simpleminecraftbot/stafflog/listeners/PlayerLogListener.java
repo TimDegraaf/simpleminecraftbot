@@ -54,6 +54,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
     private void clockIn(UUID p) {
         map.put(p, System.currentTimeMillis());
         System.out.print("clocked in " + p);
+        savestaffplaytime();
     }
     private void currentTime(@NotNull Player p){
         long logoutTime = System.currentTimeMillis();
@@ -66,6 +67,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         config.set(String.valueOf(p.getUniqueId()), toSet);
         savestaffplaytime();
         Main.getInstance().sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        savestaffplaytime();
     }
 
     private void clockOut(@NotNull Player p) {
@@ -79,6 +81,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         config.set(String.valueOf(p.getUniqueId()), toSet);
         savestaffplaytime();
         Main.getInstance().senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        savestaffplaytime();
     }
 
     public void saveAllPlayers() {
@@ -94,6 +97,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
                 clockIn(p);
             }
         }
+        savestaffplaytime();
         System.out.println("saved players");
     }
     @Override
