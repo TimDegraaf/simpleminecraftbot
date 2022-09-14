@@ -1,4 +1,4 @@
-package me.minercoffee.simpleminecraftbot.ticket;
+package me.minercoffee.simpleminecraftbot.discord.ticket;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import net.dv8tion.jda.api.EmbedBuilder;

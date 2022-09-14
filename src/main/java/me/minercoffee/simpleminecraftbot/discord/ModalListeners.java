@@ -1,4 +1,4 @@
-package me.minercoffee.simpleminecraftbot;
+package me.minercoffee.simpleminecraftbot.discord;
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

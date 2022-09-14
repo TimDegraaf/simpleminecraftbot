@@ -1,6 +1,7 @@
 package me.minercoffee.simpleminecraftbot.stafflog.listeners;
 
 import me.minercoffee.simpleminecraftbot.Main;
+import me.minercoffee.simpleminecraftbot.utils.Embles;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
@@ -11,11 +12,11 @@ import static me.minercoffee.simpleminecraftbot.utils.DataManager.getStaffplayti
 
 public class DailySummaryTask extends BukkitRunnable {
     private final Main plugin;
-
-    public DailySummaryTask(Main plugin) {
+    private final Embles embles;
+    public DailySummaryTask(Main plugin, Embles embles) {
         this.plugin = plugin;
+        this.embles = embles;
     }
-
     @Override
     public void run() {
         Date date = new Date();
@@ -30,7 +31,7 @@ public class DailySummaryTask extends BukkitRunnable {
                     toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                 }
                 System.out.println(toSend);
-                plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
+                embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**DAILY SUMMARY**\n" + toSend, false, Color.GRAY);
             } catch (Exception e) {
                 e.printStackTrace();
             }

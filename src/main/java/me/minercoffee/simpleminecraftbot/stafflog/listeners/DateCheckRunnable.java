@@ -1,6 +1,7 @@
 package me.minercoffee.simpleminecraftbot.stafflog.listeners;
 
 import me.minercoffee.simpleminecraftbot.Main;
+import me.minercoffee.simpleminecraftbot.utils.Embles;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -11,8 +12,10 @@ import static me.minercoffee.simpleminecraftbot.utils.DataManager.savestaffplayt
 
 public class DateCheckRunnable extends BukkitRunnable {
     private final Main plugin;
-    public DateCheckRunnable(Main plugin) {
+    private final Embles embles;
+    public DateCheckRunnable(Main plugin, Embles embles) {
         this.plugin = plugin;
+        this.embles = embles;
     }
     @SuppressWarnings("deprecation")
     @Override
@@ -32,7 +35,7 @@ public class DateCheckRunnable extends BukkitRunnable {
                 e.printStackTrace();
             }
             System.out.println(toSend);
-            plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+            embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
             try {
                 for (String key : getStaffplaytimeConfig().getKeys(false)) {
                     getStaffplaytimeConfig().set(key, null);

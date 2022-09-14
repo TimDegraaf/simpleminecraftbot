@@ -22,6 +22,8 @@ commands:
   ping:
     usage: /<command>
     description: retrieves the player ping
+  item:
+    usage: /<command>
 permissions:
   simpleminecraftbot.staff:
     description: All staff related permissions and staff related duties.

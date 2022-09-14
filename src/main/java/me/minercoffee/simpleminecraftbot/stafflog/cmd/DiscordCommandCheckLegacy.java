@@ -1,7 +1,6 @@
 package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
 import me.minercoffee.simpleminecraftbot.Main;
-import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.Bukkit;

@@ -2,6 +2,7 @@ package me.minercoffee.simpleminecraftbot.stafflog;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
+import me.minercoffee.simpleminecraftbot.utils.Embles;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -22,6 +23,7 @@ import java.util.List;
 
 public class staffchat extends ListenerAdapter implements TabExecutor {
     private final Main plugin;
+    private Embles embles;
     public staffchat(@NotNull Main plugin) {
         this.plugin = plugin;
         plugin.getCommand("sc").setExecutor(this);
@@ -48,7 +50,7 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
         for (Player staff : Bukkit.getOnlinePlayers()) {
             if (staff.hasPermission("simpleminecraftbot.staff") || staff.isOp()) {
                 staff.sendMessage(ColorMsg.color("&7[&c&lStaff&7] &8> " + "&4" + staff.getName() + "&6: &b" + message));
-                plugin.sendStaffChatEmbled(staff, staff.getName() + " >> " + " " + message, Color.YELLOW);
+                embles.sendStaffChatEmbled(staff, staff.getName() + " >> " + " " + message, Color.YELLOW);
             }
         }
         return true;

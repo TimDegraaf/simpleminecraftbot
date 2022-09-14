@@ -1,7 +1,7 @@
 package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
 import me.minercoffee.simpleminecraftbot.Main;
-import me.minercoffee.simpleminecraftbot.utils.DataManager;
+import me.minercoffee.simpleminecraftbot.utils.Embles;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.command.*;
@@ -16,9 +16,11 @@ import static me.minercoffee.simpleminecraftbot.utils.DataManager.getStaffplayti
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.savestaffplaytime;
 
 public class Staffplaytime implements TabExecutor {
+    private final Embles embles;
     private final Main plugin;
-    public Staffplaytime(Main plugin){
+    public Staffplaytime(Main plugin, Embles embles){
         this.plugin = plugin;
+        this.embles = embles;
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -34,7 +36,7 @@ public class Staffplaytime implements TabExecutor {
                 }
                 plugin.playerLogListener.saveAllPlayers();
                 System.out.println(toSend);
-                plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+                embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
             }
             if (args[0].equalsIgnoreCase("reset")) {
                 // clear the config
@@ -57,7 +59,7 @@ public class Staffplaytime implements TabExecutor {
                     }
                     plugin.playerLogListener.saveAllPlayers();
                     System.out.println(toSend);
-                 plugin.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+                 embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
                 }
                 if (args[0].equalsIgnoreCase("reset")) {
                     // clear the config

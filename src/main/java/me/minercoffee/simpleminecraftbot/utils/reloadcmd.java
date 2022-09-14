@@ -1,6 +1,5 @@
 package me.minercoffee.simpleminecraftbot.utils;
 
-import games.negative.framework.command.annotation.CommandInfo;
 import me.minercoffee.simpleminecraftbot.Main;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -8,11 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-@CommandInfo(
-        name = "sbreload",
-        permission = "simpleminecraftbot.admin",
-        args = {"player"}
-)
 public class reloadcmd implements CommandExecutor {
 
     public reloadcmd(Main plugin) {

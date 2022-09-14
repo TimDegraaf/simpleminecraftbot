@@ -1,7 +1,7 @@
 package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
-import games.negative.framework.message.Message;
 import me.minercoffee.simpleminecraftbot.Main;
+import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
 import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -9,6 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class CommandCheck implements CommandExecutor {
@@ -16,13 +17,15 @@ public class CommandCheck implements CommandExecutor {
     public CommandCheck(Main instance){
         this.instance = instance;
     }
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        Player player = (Player) sender;
         if (args.length != 1) {
-            new Message("&cUsage: /staffcheck <player>").send(sender);
+            player.sendMessage(ColorMsg.color("&cUsage: /staffcheck <player>"));
             return false;
         }
-        new Message("&3" + args[0] + "'s playtime so far for this week: &b%playtime%.").replace("%playtime%", getPlayTime(Bukkit.getOfflinePlayer(args[0]))).send(sender);
+        player.sendMessage(ColorMsg.color("&3" + args[0] + "'s playtime so far for this week: &b%playtime%.").replace("%playtime%", getPlayTime(Bukkit.getOfflinePlayer(args[0]))));
         return true;
     }
     private @NotNull String getPlayTime(@NotNull OfflinePlayer p) {
@@ -30,5 +33,4 @@ public class CommandCheck implements CommandExecutor {
         long time = staff.getLong(String.valueOf(p.getUniqueId()));
         return instance.convertTime(time);
     }
-
 }

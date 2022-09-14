@@ -2,6 +2,7 @@ package me.minercoffee.simpleminecraftbot.stafflog.listeners;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
+import me.minercoffee.simpleminecraftbot.utils.Embles;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Sound;
@@ -27,9 +28,11 @@ public class PlayerLogListener implements Listener, TabExecutor {
     int i;
     private final Main plugin;
     private final HashMap<UUID, Long> map;
-    public PlayerLogListener(Main plugin) {
+    private final Embles embles;
+    public PlayerLogListener(Main plugin, Embles embles) {
         this.plugin = plugin;
         this.map = Main.getMap();
+        this.embles = embles;
     }
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent e) {
@@ -54,7 +57,6 @@ public class PlayerLogListener implements Listener, TabExecutor {
     private void clockIn(UUID p) {
         map.put(p, System.currentTimeMillis());
         System.out.print("clocked in " + p);
-        savestaffplaytime();
     }
     private void currentTime(@NotNull Player p){
         long logoutTime = System.currentTimeMillis();
@@ -66,8 +68,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         Long toSet = timeToday + timeFromConfig;
         config.set(String.valueOf(p.getUniqueId()), toSet);
         savestaffplaytime();
-        Main.getInstance().sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
-        savestaffplaytime();
+        embles.sendStaffCurrentTime(p, p.getName() + " has " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
     }
 
     private void clockOut(@NotNull Player p) {
@@ -80,7 +81,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
         Long toSet = timeToday + timeFromConfig;
         config.set(String.valueOf(p.getUniqueId()), toSet);
         savestaffplaytime();
-        Main.getInstance().senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
+        embles. senddtaffoffline(p, p.getName() + " logged off with " + plugin.convertTime(toSet) + " played this week.", false, Color.GRAY);
         savestaffplaytime();
     }
 
@@ -97,7 +98,6 @@ public class PlayerLogListener implements Listener, TabExecutor {
                 clockIn(p);
             }
         }
-        savestaffplaytime();
         System.out.println("saved players");
     }
     @Override
