@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+
 public class DataManager {
     private final Main plugin;
     private FileConfiguration dataConfig = null;
@@ -22,6 +24,8 @@ public class DataManager {
 
     public static FileConfiguration messagesConfig;
     public static File messageFile;
+    public static FileConfiguration DataConfig;
+    public static File DataFile;
 
     public DataManager(@NotNull Main plugin) {
         this.plugin = plugin;
@@ -32,9 +36,11 @@ public class DataManager {
         saveDefaultConfig();
         saveAdvancementsConfig();
         savestaffplaytime();
-        AdvancementsConfig = loadCustomConfig("SimpleMinecraftBot", new File(plugin.getDataFolder(), "advancements.yml"));
-        staffplaytimeConfig = loadCustomConfig("SimpleMinecraftBot", new File(Main.getInstance().getDataFolder(), "staffplaytime.yml"));
-        messagesConfig = loadCustomConfig("SimpleMinecraftBot", new File(Main.getInstance().getDataFolder(), "messages.yml"));
+        DataConfigSetup();
+        StartupAdvancementConfig();
+        AdvancementsConfig = loadFromResource("advancements.yml", new File(plugin.getDataFolder(), "advancements.yml"));
+        messagesConfig = loadFromResource("messages.yml", new File(plugin.getDataFolder(), "messages.yml"));
+        DataConfig = loadFromResource("data.yml", new File(plugin.getDataFolder(), "data.yml"));
     }
 
     public void reloadConfig() {
@@ -53,59 +59,39 @@ public class DataManager {
 
         }
     }
-
-    public static void saveAdvancementsConfig() {
-        AdvancementsFile = new File(Main.getInstance().getDataFolder(), "advancements.yml");
-        AdvancementsConfig = loadCustomConfig("SimpleMinecraftBot", new File(Main.getInstance().getDataFolder(), "advancements.yml"));
+    public static FileConfiguration getDataConfig(){
+        if (DataConfig == null){
+            DataReload();
+        }
+        return DataConfig;
+    }
+    public static void DataConfigSetup() {
+        if (DataFile == null){
+            DataFile = new File(Main.getInstance().getDataFolder(), "data.yml");
+        }
+        if (!DataFile.exists()){
+            Main.getInstance().saveResource("data.yml", false);
+        }
+    }
+    public static void DataReload(){
+        DataConfig = loadFromResource("data.yml", new File(Main.getInstance().getDataFolder(), "data.yml"));
+        if (DataFile == null){
+            DataFile = new File(Main.getInstance().getDataFolder(), "data.yml");
+        }
+        DataConfig = YamlConfiguration.loadConfiguration(DataFile);
+        InputStream defaultStream = Main.getInstance().getResource("data.yml");
+        if (defaultStream != null){
+            YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream));
+            DataConfig.setDefaults(defaultConfig);
+        }
+    }
+    public static void SaveData() {
+        if (DataConfig == null || DataFile == null) return;
         try {
-            if (AdvancementsConfig != null) {
-                AdvancementsConfig.save(AdvancementsFile);
-            }
+            DataConfig.save(DataFile);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Main.getInstance().getLogger().log(Level.SEVERE, "Could not save data to " + DataFile, e);
         }
-    }
-
-    public static void StartupAdvancementConfig() {
-        AdvancementsFile = new File(Main.getInstance().getDataFolder(), "advancements.yml");
-        AdvancementsConfig = loadCustomConfig("SimpleMinecraftBot", new File(Main.getInstance().getDataFolder(), "advancements.yml"));
-        InputStream defaultStream = Main.getInstance().getResource("advancements.yml");
-        InputStream in =  Main.instance.getResource("advancements.yml");
-            if (defaultStream != null) {
-                YamlConfiguration AdvanceConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream));
-
-                if (in != null) {
-                    InputStreamReader inReader = new InputStreamReader(in);
-                    AdvancementsConfig.setDefaults(YamlConfiguration.loadConfiguration(inReader));
-                    try {
-                        AdvancementsConfig.setDefaults(AdvanceConfig);
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        e.printStackTrace();
-                    }
-                    AdvancementsConfig.options().copyDefaults(true);
-                    try {
-                        AdvancementsConfig.save(AdvancementsFile);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }
-    public static void StaffplaytimeSetup() {
-        staffplaytimeFile = new File(Bukkit.getServer().getPluginManager().getPlugin("SimpleMinecraftBot").getDataFolder(), "staffplaytime.yml");
-
-        if (!staffplaytimeFile.exists()){
-            try{
-                staffplaytimeFile.createNewFile();
-            }catch (IOException e){
-                //owww
-            }
-        }
-        staffplaytimeConfig = YamlConfiguration.loadConfiguration(staffplaytimeFile);
-    }
-
-    public static FileConfiguration getStaffplaytimeConfig(){
-        return staffplaytimeConfig;
     }
     public static FileConfiguration getMessagesConfig(){
         if (messagesConfig == null){
@@ -114,6 +100,7 @@ public class DataManager {
         return messagesConfig;
     }
     public static void MessagesReload(){
+        messagesConfig = loadFromResource("messages.yml", new File(Main.getInstance().getDataFolder(), "messages.yml"));
         if (messageFile == null){
             messageFile = new File(Main.getInstance().getDataFolder(), "messages.yml");
         }
@@ -124,6 +111,7 @@ public class DataManager {
             messagesConfig.setDefaults(defaultConfig);
         }
     }
+
     public static void MessagesSetup() {
         if (messageFile == null){
             messageFile = new File(Main.getInstance().getDataFolder(), "messages.yml");
@@ -140,6 +128,22 @@ public class DataManager {
             throw new RuntimeException(e);
         }
     }
+    public static void StaffplaytimeSetup() {
+        staffplaytimeFile = new File(Bukkit.getServer().getPluginManager().getPlugin("SimpleMinecraftBot").getDataFolder(), "staffplaytime.yml");
+
+        if (!staffplaytimeFile.exists()){
+            try{
+                staffplaytimeFile.createNewFile();
+            }catch (IOException e){
+                //owww
+            }
+        }
+        staffplaytimeConfig = YamlConfiguration.loadConfiguration(staffplaytimeFile);
+    }
+
+    public static FileConfiguration getStaffplaytimeConfig(){
+        return staffplaytimeConfig;
+    }
     public static void savestaffplaytime() {
         try {
             if (staffplaytimeConfig != null) {
@@ -149,35 +153,44 @@ public class DataManager {
             throw new RuntimeException(e);
         }
     }
+    public static void StartupAdvancementConfig() {
+        if (AdvancementsFile == null){
+            AdvancementsFile = new File(Main.getInstance().getDataFolder(), "advancements.yml");
+        }
+        if (!AdvancementsFile.exists()){
+            Main.getInstance().saveResource("advancements.yml", false);
+        }
+        AdvancementsConfig = YamlConfiguration.loadConfiguration(AdvancementsFile);
+    }
 
     public static FileConfiguration getadvancementsConfig(){
-        AdvancementsFile = new File(Main.getInstance().getDataFolder(), "advancements.yml");
-        AdvancementsConfig = loadCustomConfig("SimpleMinecraftBot", new File(Main.getInstance().getDataFolder(), "advancements.yml"));
+        if (AdvancementsConfig == null){
+            ReloadAdvancements();
+        }
+        if (AdvancementsConfig != null){
+            ReloadAdvancements();
+        }
         return AdvancementsConfig;
     }
     public static void ReloadAdvancements(){
-        AdvancementsFile = new File(Main.getInstance().getDataFolder(), "advancements.yml");
+        AdvancementsConfig = loadFromResource("advancements.yml", new File(Main.getInstance().getDataFolder(), "advancements.yml"));
+        if (AdvancementsFile == null){
+            AdvancementsFile = new File(Main.getInstance().getDataFolder(), "advancements.yml");
+        }
         AdvancementsConfig = YamlConfiguration.loadConfiguration(AdvancementsFile);
+        InputStream defaultStream = Main.getInstance().getResource("advancements.yml");
+        if (defaultStream != null){
+            YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream));
+            AdvancementsConfig.setDefaults(defaultConfig);
+        }
     }
-    public static @Nullable FileConfiguration loadCustomConfig(String resourceName, @NotNull File out){
-        try {
-            InputStream in =  Main.instance.getResource(resourceName);
+    public static void saveAdvancementsConfig() {
+        if (AdvancementsConfig == null || AdvancementsFile == null) return;
 
-            if(!out.exists()) {
-                Main.getInstance().getDataFolder().mkdir();
-                out.createNewFile();
-            }
-            FileConfiguration file = YamlConfiguration.loadConfiguration(out);
-            if (in != null){
-                InputStreamReader inReader = new InputStreamReader(in);
-                file.setDefaults(YamlConfiguration.loadConfiguration(inReader));
-                file.options().copyDefaults(true);
-                file.save(out);
-            }
-            return file;
-        } catch (IOException e){
-            e.printStackTrace();
-            return null;
+        try {
+            AdvancementsConfig.save(AdvancementsFile);
+        } catch (IOException e) {
+            Main.getInstance().getLogger().log(Level.SEVERE, "Could not save advancements to " + AdvancementsFile, e);
         }
     }
     public void saveDefaultConfig() {
@@ -187,6 +200,27 @@ public class DataManager {
         if (dataConfig != null) return;
         if (!this.configFile.exists()) {
             this.plugin.saveResource("config.yml", false);
+        }
+    }
+    public static @Nullable FileConfiguration loadFromResource(String resourceName, @NotNull File out){
+        try {
+            InputStream in = Main.getInstance().getResource(resourceName);
+
+            if (!out.exists()){
+                Main.getInstance().getDataFolder().mkdir();
+                out.createNewFile();
+            }
+            FileConfiguration file = YamlConfiguration.loadConfiguration(out);
+            if (in != null){
+                InputStreamReader inReader =  new InputStreamReader(in);
+                file.setDefaults(YamlConfiguration.loadConfiguration(inReader));
+                file.options().copyDefaults(true);
+                file.save(out);
+            }
+            return file;
+        } catch (IOException ex){
+            ex.printStackTrace();
+            return null;
         }
     }
 }

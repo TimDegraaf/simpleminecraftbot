@@ -11,6 +11,7 @@ import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
 import me.minercoffee.simpleminecraftbot.stafflog.staffchat;
 import me.minercoffee.simpleminecraftbot.discord.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.discord.ticket.SetTicketCMD;
+import me.minercoffee.simpleminecraftbot.stafflog.staffhomes;
 import me.minercoffee.simpleminecraftbot.utils.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -61,8 +62,8 @@ public final class Main extends JavaPlugin {
         saveConfig();
         loadConfig();
         ServerUtils();
+        DataUpdater();
         embles = new Embles(this);
-        DataManager.StartupAdvancementConfig();
         MessagesUpdater();
         String botToken = "";
         try {
@@ -92,12 +93,13 @@ public final class Main extends JavaPlugin {
             if (guildid != null){
                 guildid.upsertCommand("sup", "say wassup to someone").queue();
             }
-            new staffchat(this);
-            jda.addEventListener(new Discordhelp(this), new DiscordBotPingEvent(this),  new staffchat(this));
+            new staffchat(this, embles);
+            jda.addEventListener(new Discordhelp(this), new DiscordBotPingEvent(this),  new staffchat(this, embles));
             getCommand("staffcheck").setExecutor(new CommandCheck(this));
             getCommand("staffplaytime").setExecutor(new Staffplaytime(this, embles));
             getCommand("staff").setExecutor(new PlayerLogListener(instance, embles));
             getServer().getPluginManager().registerEvents(new PlayerLogListener(instance, embles), this);
+            getCommand("staffhome").setExecutor(new staffhomes());
             getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
             new DateCheckRunnable(this, embles).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60 * 20L);
@@ -119,13 +121,9 @@ public final class Main extends JavaPlugin {
             //advancement config getting the names.
             ConfigurationSection advancementMap = getadvancementsConfig().getConfigurationSection("advancementMap");
             if (advancementMap != null) {
-                try {
                     for (String key : advancementMap.getKeys(false)) {
                         advancementToDisplayMap.put(key, advancementMap.getString(key));
                     }
-                } catch (Exception ex){
-                    ex.printStackTrace();
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -175,7 +173,13 @@ public final class Main extends JavaPlugin {
         instance.saveConfig();
     }
     public void MessagesUpdater(){
-     //   getMessagesConfig().addDefault("First-Field", "Server Restart Schedule (PST)");
+        getMessagesConfig().addDefault("set-message", "&aSetting a temporary home at: &7");
+        getMessagesConfig().addDefault("override-message", "&aOverriding current home @: &7");
+        getMessagesConfig().addDefault("return-message", "&aReturned to former location.");
+        SaveMessageConfig();
+    }
+    public void DataUpdater(){
+        getDataConfig().addDefault("savedlocations", "");
     }
 
     public void loadConfig(){

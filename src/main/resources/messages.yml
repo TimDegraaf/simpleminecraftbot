@@ -1,0 +1,3 @@
+set-message: '&aSetting a temporary home at: &7' #end color code for coords color
+override-message: '&aOverriding current home @: &7'
+return-message: '&aReturned to former location.'

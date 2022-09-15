@@ -4,6 +4,9 @@ main: me.minercoffee.simpleminecraftbot.Main
 api-version: 1.18
 load: STARTUP
 commands:
+  staffhome:
+    usage: /<commands>
+    description: provides a temporary home
   updatechecker:
     usage: /<command>
   staffcheck:
@@ -22,8 +25,6 @@ commands:
   ping:
     usage: /<command>
     description: retrieves the player ping
-  item:
-    usage: /<command>
 permissions:
   simpleminecraftbot.staff:
     description: All staff related permissions and staff related duties.

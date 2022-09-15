@@ -2,6 +2,7 @@ package me.minercoffee.simpleminecraftbot.stafflog;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
+import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import me.minercoffee.simpleminecraftbot.utils.Embles;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -24,7 +25,8 @@ import java.util.List;
 public class staffchat extends ListenerAdapter implements TabExecutor {
     private final Main plugin;
     private Embles embles;
-    public staffchat(@NotNull Main plugin) {
+    public staffchat(@NotNull Main plugin, Embles embles) {
+        this.embles = embles;
         this.plugin = plugin;
         plugin.getCommand("sc").setExecutor(this);
         plugin.getCommand("sc").setAliases(Collections.singletonList("staffchat"));
