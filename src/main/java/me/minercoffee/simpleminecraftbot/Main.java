@@ -11,7 +11,6 @@ import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
 import me.minercoffee.simpleminecraftbot.stafflog.staffchat;
 import me.minercoffee.simpleminecraftbot.discord.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.discord.ticket.SetTicketCMD;
-import me.minercoffee.simpleminecraftbot.stafflog.staffhomes;
 import me.minercoffee.simpleminecraftbot.utils.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -99,7 +98,7 @@ public final class Main extends JavaPlugin {
             getCommand("staffplaytime").setExecutor(new Staffplaytime(this, embles));
             getCommand("staff").setExecutor(new PlayerLogListener(instance, embles));
             getServer().getPluginManager().registerEvents(new PlayerLogListener(instance, embles), this);
-            getCommand("staffhome").setExecutor(new staffhomes());
+            getCommand("staffhome").setExecutor(new Homes());
             getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
             new DateCheckRunnable(this, embles).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60 * 20L);
@@ -170,6 +169,7 @@ public final class Main extends JavaPlugin {
         instance.getConfig().addDefault("roles_staff_id", "");
         instance.getConfig().addDefault("roles_owner_id", "");
         instance.getConfig().addDefault("Status_enable", true);
+        instance.getConfig().addDefault("bot-link", "https://discord.com/api/oauth2/authorize?client_id=966786459937964062&permissions=8&scope=bot");
         instance.saveConfig();
     }
     public void MessagesUpdater(){
@@ -179,7 +179,7 @@ public final class Main extends JavaPlugin {
         SaveMessageConfig();
     }
     public void DataUpdater(){
-        getDataConfig().addDefault("savedlocations", "");
+        getDataConfig().addDefault("staff-homes-locations", "");
     }
 
     public void loadConfig(){

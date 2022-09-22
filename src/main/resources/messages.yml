@@ -1,3 +1,7 @@
 set-message: '&aSetting a temporary home at: &7' #end color code for coords color
 override-message: '&aOverriding current home @: &7'
 return-message: '&aReturned to former location.'
+staffhome-delete-message: '&c&lStaff Home Deleted!'
+tickets:
+  line-one-of-description: "Welcome!"
+  line-two-of-description: "A staff member will be with you help!"

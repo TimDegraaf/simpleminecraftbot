@@ -3,6 +3,7 @@ package me.minercoffee.simpleminecraftbot.discord.ticket;
 import me.minercoffee.simpleminecraftbot.Main;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -18,6 +19,8 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Objects;
 
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.getMessagesConfig;
+
 
 public class ButtonListener extends ListenerAdapter {
    public Main plugin;
@@ -32,10 +35,7 @@ public class ButtonListener extends ListenerAdapter {
             String ownerRole = plugin.getConfig().getString("roles_owner_id");
             String playerRole = plugin.getConfig().getString("roles_player_id");
             String staffRole = plugin.getConfig().getString("roles_staff_id");
-            String Catorgory_ID = plugin.getConfig().getString("category_id");
-            if (Catorgory_ID == null){
-               Catorgory_ID = plugin.getConfig().getString("category_id");
-            }
+            long Catorgory_ID = plugin.getConfig().getLong("category_id");
             if (Objects.equals(e.getButton().getId(), "openTicket")){
                 String role = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
                 if (playerRole != null && role.contains(playerRole)) {
@@ -48,24 +48,24 @@ public class ButtonListener extends ListenerAdapter {
                     EmbedBuilder embed = new EmbedBuilder();
                     embed.setColor(Color.GREEN);
                     embed.setTitle(e.getUser().getName() + " 's Ticket");
-                    embed.setDescription(e.getMember().getAsMention() + "Welcome!");
-                    embed.setDescription("A staff member will be with you shortly!");
+                    embed.setDescription(e.getMember().getAsMention() + getMessagesConfig().getString("tickets.line-one-of-description"));
+                    embed.setDescription(e.getMember().getAsMention() + getMessagesConfig().getString("tickets.line-two-of-description"));
                     if (guild != null) {
-                        if (Catorgory_ID != null) {
                             guild.createTextChannel("ticket-" + random_int, guild.getCategoryById(Catorgory_ID))
                                     .addPermissionOverride(e.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
                                     .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                                     .addPermissionOverride(Objects.requireNonNull(guild.getRoleById(playerRole)), EnumSet.of(Permission.VIEW_CHANNEL), null)
                                     .complete().sendMessageEmbeds(embed.build()).setActionRow(closeButton(), claimButton()).queue();
-                        }
+
                         EmbedBuilder embedTeam = new EmbedBuilder();
                         embedTeam.setColor(Color.GREEN);
                         embedTeam.setTitle("Ticket System");
                         embedTeam.addField("Person", e.getMember().getAsMention(), true);
                         embedTeam.addField("Date", format.format(date), true);
-                        if (Catorgory_ID != null) {
-                           Objects.requireNonNull(guild.getTextChannelById(Catorgory_ID)).sendMessageEmbeds(embedTeam.build()).queue();
+                        if (Catorgory_ID == 0L) {
+                            return;
                         }
+                        guild.getTextChannelById(Catorgory_ID).sendMessageEmbeds(embedTeam.build()).queue(); //TODO fix null with Catorgory id
                     }
                 }
                 if (ownerRole != null && role.contains(ownerRole)) {
@@ -98,16 +98,15 @@ public class ButtonListener extends ListenerAdapter {
                     } else {
                         permissionOverride.getManager().setAllowed(Permission.VIEW_CHANNEL).queue();
                     }
-                    PermissionOverride permissionOverride2 = null;
-                    if (Catorgory_ID != null) {
-                        permissionOverride2 = channel.getPermissionOverride(Objects.requireNonNull(Objects.requireNonNull(e.getGuild()).getRoleById(Catorgory_ID)));
-                    }
-                    if (permissionOverride2 == null) {
-                        if (Catorgory_ID != null) {
-                            channel.upsertPermissionOverride(Objects.requireNonNull(e.getGuild().getRoleById(Catorgory_ID))).setDenied(Permission.VIEW_CHANNEL).queue();
+                    PermissionOverride permissionOverride2;
+                    if (playerRole != null) {
+                        permissionOverride2 = channel.getPermissionOverride(Objects.requireNonNull(Objects.requireNonNull(e.getGuild()).getRoleById(playerRole)));
+
+                        if (permissionOverride2 == null) {
+                            channel.upsertPermissionOverride(Objects.requireNonNull(e.getGuild().getRoleById(playerRole))).setDenied(Permission.VIEW_CHANNEL).queue(); //switch to playerrole instead of category
+                        } else {
+                            permissionOverride2.getManager().setDenied(Permission.VIEW_CHANNEL).queue();
                         }
-                    } else {
-                        permissionOverride2.getManager().setDenied(Permission.VIEW_CHANNEL).queue();
                     }
                 }
             }

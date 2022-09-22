@@ -140,7 +140,18 @@ public class DataManager {
         }
         staffplaytimeConfig = YamlConfiguration.loadConfiguration(staffplaytimeFile);
     }
-
+    public static void StaffplaytimeReload(){
+        staffplaytimeConfig = loadFromResource("staffplaytime.yml", new File(Main.getInstance().getDataFolder(), "staffplaytime.yml"));
+        if (staffplaytimeFile == null){
+            staffplaytimeFile = new File(Main.getInstance().getDataFolder(), "staffplaytime.yml");
+        }
+        staffplaytimeConfig = YamlConfiguration.loadConfiguration(AdvancementsFile);
+        InputStream defaultStream = Main.getInstance().getResource("staffplaytime.yml");
+        if (defaultStream != null){
+            YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream));
+            staffplaytimeConfig.setDefaults(defaultConfig);
+        }
+    }
     public static FileConfiguration getStaffplaytimeConfig(){
         return staffplaytimeConfig;
     }

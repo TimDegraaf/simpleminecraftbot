@@ -7,6 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
+
 public class reloadcmd implements CommandExecutor {
 
     public reloadcmd(Main plugin) {
@@ -18,6 +20,10 @@ public class reloadcmd implements CommandExecutor {
         if (command.getName().equalsIgnoreCase("sbreload")) {
             if (p.isOp() || p.hasPermission("simpleminecraftbot.admin")) {
                 Main.instance.reloadConfig();
+                DataReload();
+                MessagesReload();
+                ReloadAdvancements();
+                StaffplaytimeReload();
                 p.sendMessage(ColorMsg.color("&c&l Reloaded the config"));
                 System.out.println(ColorMsg.color("&c&l Reloaded the config"));
             }

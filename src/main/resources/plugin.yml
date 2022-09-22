@@ -1,5 +1,5 @@
 name: SimpleMinecraftBot
-version: '${project.version}'
+version: 1.75
 main: me.minercoffee.simpleminecraftbot.Main
 api-version: 1.18
 load: STARTUP
