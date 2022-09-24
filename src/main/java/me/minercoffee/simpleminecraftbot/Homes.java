@@ -38,18 +38,34 @@ public class Homes implements TabExecutor {
                     }
                     homeName = builder.toString();
                     homeName = homeName.stripTrailing();
-/*                     if (args.length == 1 && args[0].equalsIgnoreCase("return")) { //teleports owner to homeName
+
+                    if (args.length == 2 && args[0].equalsIgnoreCase("return")) { //staffhome return homeName
                          if (getDataConfig().isConfigurationSection("staff-homes-locations." +  homeName)) {
-                             System.out.println("test");
-                             Location return_location = new Location(p.getWorld(), getDataConfig().getInt("staff-homes-locations." + homeName + ".x"), //TODO Added Pinch & YAW & World. Ex: world_the_nether
-                                     getDataConfig().getInt("staff-homes-locations." +  homeName  + ".y")
-                                     , getDataConfig().getInt("staff-homes-locations." +  homeName + ".z"));
+                             Location return_location = new Location(p.getWorld(), getDataConfig().getInt("staff-homes-locations." + homeName + ".x"), getDataConfig().getInt("staff-homes-locations." + homeName + ".y"), getDataConfig().getInt("staff-homes-locations." + homeName + ".z"));
                              p.teleport(return_location);
                              p.sendMessage(ColorMsg.color(getMessagesConfig().getString("return-message")));
                          } else {
                              p.sendMessage(ChatColor.DARK_RED + "You never set a staff home.");
                          }
-                    } */
+                    }
+
+                    if (args.length == 3 && args[0].equalsIgnoreCase("return")) { //staffhome return <target> homeName
+                        if (p.hasPermission("simpleminecraftbot.staff") || p.isOp()) {
+                            Player t = Bukkit.getPlayer(args[1]);
+                            homeName = args[2];
+                            if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName )) {
+                                if (t != null) {
+                                    p.sendMessage(ChatColor.GREEN + "Teleporting to homeName: " + getDataConfig().getString("staff-homes-locations." + homeName + ".homename") + " in the" + getDataConfig().getString("staff-homes-locations." + homeName + ".worldName") + " " + "@: " + ChatColor.GRAY + getDataConfig().getInt("staff-homes-locations." + homeName + ".x") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".y") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".z") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".pinch") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".yaw"));
+                                    Location return_location = new Location(t.getWorld(), getDataConfig().getInt("staff-homes-locations." + homeName + ".x"), getDataConfig().getInt("staff-homes-locations." + homeName + ".y"), getDataConfig().getInt("staff-homes-locations." + homeName + ".z"));
+                                    p.teleport(return_location);
+                                }
+                            } else {
+                                p.sendMessage(ChatColor.DARK_RED + "That player does not have a home set.");
+                            }
+                        } else {
+                            p.sendMessage(ChatColor.DARK_RED + "You don't have permission to use this command.");
+                        }
+                    }
 
                     if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
                         p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7==&a&lStaff&eHomes&7 by MinerCoffee=="));
@@ -59,6 +75,7 @@ public class Homes implements TabExecutor {
                         p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7========================="));
                         return true;
                     }
+
                     if (args.length == 1 && args[0].equalsIgnoreCase("return")) {
                         return true;
                     }
@@ -68,49 +85,20 @@ public class Homes implements TabExecutor {
                     }
 
                     if (args.length == 1 && args[0].equalsIgnoreCase("delete")) {
-                        String HomeName = getDataConfig().getString("staff-homes-locations." + homeName + ".homename");
-                        p.sendMessage(ColorMsg.color("&cPlease provide a your" + " " +  HomeName + " " + "with the homeName you created."));
+                        p.sendMessage(ColorMsg.color("&cPlease provide a your" + " " +  getDataConfig().getString("staff-homes-locations." + homeName + ".homename") + " " + "with the homeName you created."));
                         return true;
                     }
                    homeName = args[1];
                     if (args.length == 2 && args[0].equalsIgnoreCase("set")) {
-                        if (getDataConfig().isConfigurationSection("staff-homes-locations." +  homeName)) {
-                            p.sendMessage(ColorMsg.color(getMessagesConfig().getString("override-message")) +
-                                    getDataConfig().getInt("staff-homes-locations." +  homeName + ".x") + " " +
-                                    getDataConfig().getInt("staff-homes-locations." +  homeName + ".y")
-                                    + " " + getDataConfig().getInt("staff-homes-locations." +  homeName  +".z") + " " + getDataConfig().getInt("staff-homes-locations." +  homeName +  ".pinch") + " " +
-                                    getDataConfig().getInt("staff-homes-locations." +  homeName + ".yaw")); //TODO Added Pinch & YAW & World. Ex: world_the_nether
+                        if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
+                            p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
                             saveLocation(p);
                         } else {
                             saveLocation(p);
-                        }
-                    }
-                    if (args.length == 3 && args[0].equalsIgnoreCase("return")) { //staffhome return <target> homeName
-                        if (p.hasPermission("simpleminecraftbot.staff") || p.isOp()) {
-                            Player t = Bukkit.getPlayer(args[1]);
-                            String worldName = getDataConfig().getString("staff-homes-locations." + homeName + ".worldName");
-                            String HomeName = getDataConfig().getString("staff-homes-locations." + homeName + ".homename");
-                                homeName = args[2]; //ToDo fix msg it shows args instead of the homeName
-                                if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName )) {
-                                    p.sendMessage(ChatColor.GREEN + "Teleporting to " + HomeName + " in the" + worldName + " " + "@: " + ChatColor.GRAY + getDataConfig().getInt("staff-homes-locations." +  homeName + ".x") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".y") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".z"));
-                                    Location return_location = null; //TODO Added Pinch & YAW & World. Ex: world_the_nether
-                                    if (t != null) {
-                                        return_location = new Location(t.getWorld(), getDataConfig().getInt("staff-homes-locations." + homeName + ".x"), getDataConfig().getInt("staff-homes-locations." + homeName + ".y"), getDataConfig().getInt("staff-homes-locations." + homeName + ".z"));
-                                    }
-                                    if (return_location != null) {
-                                        p.teleport(return_location);
-                                    }
-                                } else {
-                                    p.sendMessage(ChatColor.DARK_RED + "That player does not have a home set.");
-                                }
-                        } else {
-                            p.sendMessage(ChatColor.DARK_RED + "You don't have permission to use this command.");
                         }
                     }
                     if (args.length == 2 && args[0].equalsIgnoreCase("delete")) { //staffhome delete playerNamehomeNAme
                         homeName = args[1];
-                        String HomeName = getDataConfig().getString("staff-homes-locations." + homeName + ".homename");
-                        String PlayerName = getDataConfig().getString("staff-homes-locations." + homeName + ".owner");
                         if (p.hasPermission("simpleminecraftbot.staff") || p.isOp()) {
                             if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
                                     System.out.println("testing delete");
@@ -127,8 +115,7 @@ public class Homes implements TabExecutor {
     }
     private void saveLocation(@NotNull Player p) {
         Location l = p.getLocation();
-        //TODO Make Variables for the cords
-        p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("set-message") + Math.round(l.getX()) + " " + Math.round(l.getY()) + " " + Math.round(l.getZ())));
+        p.sendMessage(ColorMsg.color(getMessagesConfig().getString("set-message") + Math.round(l.getX()) + " " + Math.round(l.getY()) + " " + Math.round(l.getZ())));
         getDataConfig().createSection("staff-homes-locations." + homeName);
         getDataConfig().set("staff-homes-locations." +  homeName + ".homename", homeName);
         getDataConfig().set("staff-homes-locations." +  homeName + ".owner",  p.getName());
@@ -138,6 +125,7 @@ public class Homes implements TabExecutor {
         getDataConfig().set("staff-homes-locations." +  homeName +  ".yaw", l.getYaw());
         getDataConfig().set("staff-homes-locations." +  homeName +  ".pitch", l.getPitch());
         getDataConfig().set("staff-homes-locations." +  homeName +  ".worldName", l.getWorld().getName());
+        getDataConfig().set("staff-homes-locations." +  homeName +  ".limit", 1);
         SaveData();
     }
 
