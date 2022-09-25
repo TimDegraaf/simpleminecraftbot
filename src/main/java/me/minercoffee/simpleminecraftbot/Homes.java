@@ -40,6 +40,7 @@ public class Homes implements TabExecutor {
                     homeName = homeName.stripTrailing();
 
                     if (args.length == 2 && args[0].equalsIgnoreCase("return")) { //staffhome return homeName
+                        homeName = args[1];
                          if (getDataConfig().isConfigurationSection("staff-homes-locations." +  homeName)) {
                              Location return_location = new Location(p.getWorld(), getDataConfig().getInt("staff-homes-locations." + homeName + ".x"), getDataConfig().getInt("staff-homes-locations." + homeName + ".y"), getDataConfig().getInt("staff-homes-locations." + homeName + ".z"));
                              p.teleport(return_location);
@@ -55,7 +56,7 @@ public class Homes implements TabExecutor {
                             homeName = args[2];
                             if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName )) {
                                 if (t != null) {
-                                    p.sendMessage(ChatColor.GREEN + "Teleporting to homeName: " + getDataConfig().getString("staff-homes-locations." + homeName + ".homename") + " in the" + getDataConfig().getString("staff-homes-locations." + homeName + ".worldName") + " " + "@: " + ChatColor.GRAY + getDataConfig().getInt("staff-homes-locations." + homeName + ".x") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".y") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".z") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".pinch") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".yaw"));
+                                    p.sendMessage(ChatColor.GREEN + "Teleporting to " + getDataConfig().getString("staff-homes-locations." + homeName + ".homename") + " in the " + getDataConfig().getString("staff-homes-locations." + homeName + ".worldName") + " " + "@: " + ChatColor.GRAY + getDataConfig().getInt("staff-homes-locations." + homeName + ".x") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".y") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".z") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".pinch") + " " + getDataConfig().getInt("staff-homes-locations." + homeName + ".yaw"));
                                     Location return_location = new Location(t.getWorld(), getDataConfig().getInt("staff-homes-locations." + homeName + ".x"), getDataConfig().getInt("staff-homes-locations." + homeName + ".y"), getDataConfig().getInt("staff-homes-locations." + homeName + ".z"));
                                     p.teleport(return_location);
                                 }
@@ -90,21 +91,27 @@ public class Homes implements TabExecutor {
                     }
                    homeName = args[1];
                     if (args.length == 2 && args[0].equalsIgnoreCase("set")) {
-                        if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
-                            p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
-                            saveLocation(p);
-                        } else {
+                                // want to check homename and the player if these are true
+                        if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) { //updates home location
+                            if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." +  homeName + ".homename")).equals(homeName)){
+                                p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
+                                saveLocation(p);
+                            }
+                        } else { //creates it for the first time
                             saveLocation(p);
                         }
                     }
-                    if (args.length == 2 && args[0].equalsIgnoreCase("delete")) { //staffhome delete playerNamehomeNAme
+                    if (args.length == 2 && args[0].equalsIgnoreCase("delete")) { //staffhome delete homename
                         homeName = args[1];
                         if (p.hasPermission("simpleminecraftbot.staff") || p.isOp()) {
                             if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
-                                    System.out.println("testing delete");
-                                    getDataConfig().set("staff-homes-locations." + homeName, null); //TODO make it delete the home with the owner with it. Essentially it would find the name of the home and then find the owner lastly delete the home
+                                if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
+                                    getDataConfig().set("staff-homes-locations." + homeName, null);
                                     SaveData();
-                                    p.sendMessage(ColorMsg.color("&c&lStaff Home Deleted!"));
+                                    p.sendMessage(ColorMsg.color(messagesConfig.getString("staffhome-delete-message")));
+                                }
+                            }  else {
+                                p.sendMessage(ColorMsg.color("&cNo home found with that name provided. &r&7Please try again."));
                             }
                         }
                     }
