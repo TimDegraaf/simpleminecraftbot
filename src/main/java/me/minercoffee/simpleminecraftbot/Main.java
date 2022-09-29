@@ -8,7 +8,7 @@ import me.minercoffee.simpleminecraftbot.discord.BotCommands;
 import me.minercoffee.simpleminecraftbot.discord.ModalListeners;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
 import me.minercoffee.simpleminecraftbot.stafflog.listeners.*;
-import me.minercoffee.simpleminecraftbot.stafflog.staffchat;
+import me.minercoffee.simpleminecraftbot.stafflog.cmd.staffchat;
 import me.minercoffee.simpleminecraftbot.discord.ticket.ButtonListener;
 import me.minercoffee.simpleminecraftbot.discord.ticket.SetTicketCMD;
 import me.minercoffee.simpleminecraftbot.utils.*;
@@ -47,7 +47,7 @@ public final class Main extends JavaPlugin {
     public TextChannel ServerStatuschannel;
     public TextChannel ingamestaffchatchannel;
     public TextChannel commandschannel;
-    private static final String PREFIX = "!";
+    public static final String PREFIX = "!";
     public static Main getInstance() {
         return instance;
     }
@@ -73,6 +73,9 @@ public final class Main extends JavaPlugin {
             String chatChannelId = getConfig().getString("ingame-chat");
             if (chatChannelId != null) {
                 chatChannel = jda.getTextChannelById(chatChannelId);
+            }
+            if (chatChannel == null || chatChannelId == null){
+                System.out.println("Please fill out the config.yml and restart the server.");
             }
             String ingamestaffchatid = getConfig().getString("staffchat");
             if (ingamestaffchatid != null){
@@ -170,10 +173,15 @@ public final class Main extends JavaPlugin {
         instance.getConfig().addDefault("roles_owner_id", "");
         instance.getConfig().addDefault("Status_enable", true);
         instance.getConfig().addDefault("bot-link", "https://discord.com/api/oauth2/authorize?client_id=966786459937964062&permissions=8&scope=bot");
+        instance.getConfig().addDefault("bot-prefix", "!");
+        instance.getConfig().addDefault("guild_id", "");
+        instance.getConfig().addDefault("staffplaytime-timer.daily-hour", "22");
+        instance.getConfig().addDefault("staffplaytime-timer.weekly-hour", "22");
+        instance.getConfig().addDefault("staffplaytime-timer.weekly-day", "0");
         instance.saveConfig();
     }
     public void MessagesUpdater(){
-        getMessagesConfig().addDefault("set-message", "&aSetting a temporary home at: &7");
+        getMessagesConfig().addDefault("set-message", "&aSetting a temporary home @: &7");
         getMessagesConfig().addDefault("override-message", "&aOverriding current home @: &7");
         getMessagesConfig().addDefault("return-message", "&aReturned to former location.");
         SaveMessageConfig();

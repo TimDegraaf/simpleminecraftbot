@@ -12,6 +12,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
+
 public class CommandCheck implements CommandExecutor {
     private final Main instance;
     public CommandCheck(Main instance){
@@ -29,7 +31,7 @@ public class CommandCheck implements CommandExecutor {
         return true;
     }
     private @NotNull String getPlayTime(@NotNull OfflinePlayer p) {
-        FileConfiguration staff = DataManager.getStaffplaytimeConfig();
+        FileConfiguration staff = getStaffplaytimeConfig();
         long time = staff.getLong(String.valueOf(p.getUniqueId()));
         return instance.convertTime(time);
     }

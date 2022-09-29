@@ -1,7 +1,22 @@
-set-message: '&aSetting a temporary home at: &7' #end color code for coords color
-override-message: '&aOverriding current home @: &7'
-return-message: '&aReturned to former location.'
-staffhome-delete-message: '&c&lStaff Home Deleted!'
+staffhome:
+  player-message: '&aSetting a new temporary home @: &7' #end color code for coords color
+  staff-message: '&aSetting a new temporary home @: &7'
+  override-message: '&aOverriding current home @: &7'
+  update-home-message: '&aYour new home is @: &7'
+  return-message: '&aReturned to former location.'
+  list-message: '&l&7Here are your homes: '
+  delete-message: '&c&lHome Deleted!'
+staffchat:
+  prefix: '&7[&c&lStaff&7]'
 tickets:
   line-one-of-description: "Welcome!"
   line-two-of-description: "A staff member will be with you help!"
+ticket-support-button:
+  title: 'Ticket Support'
+  description: 'Click on the button and get a ticket support.'
+discord-srv-messages:
+  onfirstjoin: "has join the game for the first time!"
+  onjoin: "joined the game."
+  onquit: "left the game."
+  ondeath: "died."
+  onadvancement: "has made the advancement!"

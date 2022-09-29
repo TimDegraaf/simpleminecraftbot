@@ -1,5 +1,6 @@
 #SimpleMinecraftBot Provided by MinerCoffee
 bot-link: "https://discord.com/api/oauth2/authorize?client_id=966786459937964062&permissions=8&scope=bot" #The bot used for this plugin. Give the bot the basic bot perms, and it will work.
+bot-prefix: '!'
 staffplaytime: '' #staff channel for playtime
 serverstatus: '' #server-status channel where it sends a message in the channel for schedule restarts.
 ingame-chat: '' #ingame chat from minecraft
@@ -11,6 +12,10 @@ roles_staff_id: '' #staff role id
 roles_owner_id: '' #owner role id
 guild_id: '' #discord server id, used for ticket system
 Status_enable: true
+staffplaytime-timer: #Hours are in military time. Ex: 13.00 would = 1pm pst. Fractions and decimals are not supportive yet please use whole numbers.
+  daily-hour: 22
+  weekly-hour: 22
+  weekly-day: 0 #days from 0-6 ex: 0 = Sunday 6 = Saturday
 permissions:
   - simpleminecraftbot.staff
   - simpleminecraftbot.admin

@@ -98,7 +98,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
                 clockIn(p);
             }
         }
-        System.out.println("saved players");
+        System.out.println("staffplaytime saved.");
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -106,7 +106,6 @@ public class PlayerLogListener implements Listener, TabExecutor {
             if (args[0].equalsIgnoreCase("on")) {
                 if (p.hasPermission("simpleminecraftbot.staff")  || p.isOp()) {
                     clockIn(p.getUniqueId());
-                    p.sendMessage(ColorMsg.color("&lGet to work!"));
                     p.playSound(p.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, 15, 3);
                 }
             }
@@ -115,7 +114,6 @@ public class PlayerLogListener implements Listener, TabExecutor {
             if (args[0].equalsIgnoreCase("off")) {
                 if (p.hasPermission("simpleminecraftbot.staff")) {
                     clockOut(p);
-                    p.sendMessage(ColorMsg.color("&lI'm out!"));
                     p.playSound(p.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, 15, 3);
                 }
             }

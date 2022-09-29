@@ -29,7 +29,7 @@ public class OnlineStaff extends ListenerAdapter {
             ArrayList<Player> list = new ArrayList<>(plugin.getServer().getOnlinePlayers());
             try {
                 for (Player staff : list) {
-                    if (staff.isOp() || staff.hasPermission("illusive.staff")) {
+                    if (staff.isOp() || staff.hasPermission("simpleminecraftbot.staff")) {
                         if (staff.isOnline()) {
                             e.getChannel().sendMessage("There are" + " " + i + " staff members online.").queue();
                             i++;

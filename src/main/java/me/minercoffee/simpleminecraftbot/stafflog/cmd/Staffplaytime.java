@@ -39,7 +39,6 @@ public class Staffplaytime implements TabExecutor {
                 embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
             }
             if (args[0].equalsIgnoreCase("reset")) {
-                // clear the config
                 for (String key : getStaffplaytimeConfig().getKeys(false)) {
                     plugin.playerLogListener.saveAllPlayers();
                    getStaffplaytimeConfig().set(key, null);
@@ -62,7 +61,6 @@ public class Staffplaytime implements TabExecutor {
                  embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
                 }
                 if (args[0].equalsIgnoreCase("reset")) {
-                    // clear the config
                     for (String key : getStaffplaytimeConfig().getKeys(false)) {
                         plugin.playerLogListener.saveAllPlayers();
                         getStaffplaytimeConfig().set(key, null);

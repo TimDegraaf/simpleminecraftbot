@@ -22,11 +22,13 @@ public class DailySummaryTask extends BukkitRunnable {
         Date date = new Date();
         Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
         calendar.setTime(date);   // assigns calendar to given date
-        if (calendar.get(Calendar.HOUR_OF_DAY) == 22) {
+        int daily_hour = plugin.getConfig().getInt("staffplaytime-timer.daily-hour");
+        if (calendar.get(Calendar.HOUR_OF_DAY) == daily_hour) {
             try {
                 StringBuilder toSend = new StringBuilder();
                 for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
                     OfflinePlayer player = Bukkit.getServer().getOfflinePlayer(uuid);
+                    if (player.getPlayer() == null) return;
                     if (player.getPlayer().hasPermission("simplebotminecraft.staff")  || player.isOp()) return;
                     toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                 }

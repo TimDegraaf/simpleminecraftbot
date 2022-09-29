@@ -1,4 +1,4 @@
-package me.minercoffee.simpleminecraftbot.stafflog;
+package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static me.minercoffee.simpleminecraftbot.utils.DataManager.messagesConfig;
+
 public class staffchat extends ListenerAdapter implements TabExecutor {
     private final Main plugin;
-    private Embles embles;
+    private final Embles embles;
     public staffchat(@NotNull Main plugin, Embles embles) {
         this.embles = embles;
         this.plugin = plugin;
@@ -47,11 +49,11 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
             return true;
         }
         if (message.equals("")) {
-            p.sendMessage(ColorMsg.color("&4Usage&6: &7/staffchat"));
+            p.sendMessage(ColorMsg.color("&4Usage&6: &7/staffchat <message>"));
         }
         for (Player staff : Bukkit.getOnlinePlayers()) {
             if (staff.hasPermission("simpleminecraftbot.staff") || staff.isOp()) {
-                staff.sendMessage(ColorMsg.color("&7[&c&lStaff&7] &8> " + "&4" + staff.getName() + "&6: &b" + message));
+                staff.sendMessage(ColorMsg.color( messagesConfig.getString("staffchat.prefix") +  " &8>" + "&4" + staff.getName() + "&6: &b" + message));
                 embles.sendStaffChatEmbled(staff, staff.getName() + " >> " + " " + message, Color.YELLOW);
             }
         }

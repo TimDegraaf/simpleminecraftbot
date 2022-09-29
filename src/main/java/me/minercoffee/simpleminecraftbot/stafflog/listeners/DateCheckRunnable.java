@@ -23,9 +23,10 @@ public class DateCheckRunnable extends BukkitRunnable {
         Date date = new Date();
         Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
         calendar.setTime(date);   // assigns calendar to given date
+        int weekly_hour = plugin.getConfig().getInt("staffplaytime-timer.weekly-hour");
+        int weekly_day = plugin.getConfig().getInt("staffplaytime-timer.weekly-day");
 
-        if (date.getDay() == 0 && calendar.get(Calendar.HOUR_OF_DAY) == 22) {
-            // discord stuff
+        if (date.getDay() == weekly_day && calendar.get(Calendar.HOUR_OF_DAY) == weekly_hour) {
             StringBuilder toSend = new StringBuilder();
             try {
                 for (String uuid : getStaffplaytimeConfig().getKeys(false)) {

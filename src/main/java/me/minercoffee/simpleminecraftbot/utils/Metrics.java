@@ -32,6 +32,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 public class Metrics {
 
@@ -46,7 +47,7 @@ public class Metrics {
      * @param serviceId The id of the service. It can be found at <a
      *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
      */
-    public Metrics(JavaPlugin plugin, int serviceId) {
+    public Metrics(@NotNull JavaPlugin plugin, int serviceId) {
         this.plugin = plugin;
         // Get the config file
         File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
@@ -106,7 +107,7 @@ public class Metrics {
         metricsBase.addCustomChart(chart);
     }
 
-    private void appendPlatformData(JsonObjectBuilder builder) {
+    private void appendPlatformData(@NotNull JsonObjectBuilder builder) {
         builder.appendField("playerAmount", getPlayerAmount());
         builder.appendField("onlineMode", Bukkit.getOnlineMode() ? 1 : 0);
         builder.appendField("bukkitVersion", Bukkit.getVersion());
@@ -118,7 +119,7 @@ public class Metrics {
         builder.appendField("coreCount", Runtime.getRuntime().availableProcessors());
     }
 
-    private void appendServiceData(JsonObjectBuilder builder) {
+    private void appendServiceData(@NotNull JsonObjectBuilder builder) {
         builder.appendField("pluginVersion", plugin.getDescription().getVersion());
     }
 
@@ -126,7 +127,7 @@ public class Metrics {
         try {
             // Around MC 1.8 the return type was changed from an array to a collection,
             // This fixes java.lang.NoSuchMethodError:
-            // org.bukkit.Bukkit.getOnlinePlayers()Lava/util/Collection;
+            // org.bukkit.Bukkit.getOnlinePlayers()Ljava/util/Collection;
             Method onlinePlayersMethod = Class.forName("org.bukkit.Server").getMethod("getOnlinePlayers");
             return onlinePlayersMethod.getReturnType().equals(Collection.class)
                     ? ((Collection<?>) onlinePlayersMethod.invoke(Bukkit.getServer())).size()
@@ -181,20 +182,20 @@ public class Metrics {
          * @param platform The platform of the service.
          * @param serviceId The id of the service.
          * @param serverUuid The server uuid.
-         * @param enabled Whether data sending is enabled.
+         * @param enabled Whether or not data sending is enabled.
          * @param appendPlatformDataConsumer A consumer that receives a {@code JsonObjectBuilder} and
          *     appends all platform-specific data.
          * @param appendServiceDataConsumer A consumer that receives a {@code JsonObjectBuilder} and
          *     appends all service-specific data.
          * @param submitTaskConsumer A consumer that takes a runnable with the submit task. This can be
-         *     used to delegate the data collection to a thread to prevent errors caused by
+         *     used to delegate the data collection to a another thread to prevent errors caused by
          *     concurrency. Can be {@code null}.
          * @param checkServiceEnabledSupplier A supplier to check if the service is still enabled.
          * @param errorLogger A consumer that accepts log message and an error.
          * @param infoLogger A consumer that accepts info log messages.
-         * @param logErrors Whether errors should be logged.
-         * @param logSentData Whether the scent data should be logged.
-         * @param logResponseStatusText Whether the response status text should be logged.
+         * @param logErrors Whether or not errors should be logged.
+         * @param logSentData Whether or not the sent data should be logged.
+         * @param logResponseStatusText Whether or not the response status text should be logged.
          */
         public MetricsBase(
                 String platform,
@@ -263,37 +264,33 @@ public class Metrics {
         }
 
         private void submitData() {
-            try {
-                final JsonObjectBuilder baseJsonBuilder = new JsonObjectBuilder();
-                appendPlatformDataConsumer.accept(baseJsonBuilder);
-                final JsonObjectBuilder serviceJsonBuilder = new JsonObjectBuilder();
-                appendServiceDataConsumer.accept(serviceJsonBuilder);
-                JsonObjectBuilder.JsonObject[] chartData =
-                        customCharts.stream()
-                                .map(customChart -> customChart.getRequestJsonObject(errorLogger, logErrors))
-                                .filter(Objects::nonNull)
-                                .toArray(JsonObjectBuilder.JsonObject[]::new);
-                serviceJsonBuilder.appendField("id", serviceId);
-                serviceJsonBuilder.appendField("customCharts", chartData);
-                baseJsonBuilder.appendField("service", serviceJsonBuilder.build());
-                baseJsonBuilder.appendField("serverUUID", serverUuid);
-                baseJsonBuilder.appendField("metricsVersion", METRICS_VERSION);
-                JsonObjectBuilder.JsonObject data = baseJsonBuilder.build();
-                scheduler.execute(
-                        () -> {
-                            try {
-                                // Send the data
-                                sendData(data);
-                            } catch (Exception e) {
-                                // Something went wrong! :(
-                                if (logErrors) {
-                                    errorLogger.accept("Could not submit bStats metrics data", e);
-                                }
+            final JsonObjectBuilder baseJsonBuilder = new JsonObjectBuilder();
+            appendPlatformDataConsumer.accept(baseJsonBuilder);
+            final JsonObjectBuilder serviceJsonBuilder = new JsonObjectBuilder();
+            appendServiceDataConsumer.accept(serviceJsonBuilder);
+            JsonObjectBuilder.JsonObject[] chartData =
+                    customCharts.stream()
+                            .map(customChart -> customChart.getRequestJsonObject(errorLogger, logErrors))
+                            .filter(Objects::nonNull)
+                            .toArray(JsonObjectBuilder.JsonObject[]::new);
+            serviceJsonBuilder.appendField("id", serviceId);
+            serviceJsonBuilder.appendField("customCharts", chartData);
+            baseJsonBuilder.appendField("service", serviceJsonBuilder.build());
+            baseJsonBuilder.appendField("serverUUID", serverUuid);
+            baseJsonBuilder.appendField("metricsVersion", METRICS_VERSION);
+            JsonObjectBuilder.JsonObject data = baseJsonBuilder.build();
+            scheduler.execute(
+                    () -> {
+                        try {
+                            // Send the data
+                            sendData(data);
+                        } catch (Exception e) {
+                            // Something went wrong! :(
+                            if (logErrors) {
+                                errorLogger.accept("Could not submit bStats metrics data", e);
                             }
-                        });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                        }
+                    });
         }
 
         private void sendData(JsonObjectBuilder.JsonObject data) throws Exception {
@@ -649,7 +646,7 @@ public class Metrics {
     /**
      * An extremely simple JSON builder.
      *
-     * <p>While this class is neither feature-rich nor the most performant one, it's sufficient
+     * <p>While this class is neither feature-rich nor the most performant one, it's sufficient enough
      * for its use-case.
      */
     public static class JsonObjectBuilder {
@@ -803,7 +800,7 @@ public class Metrics {
         }
 
         /**
-         * Escapes the given string like stated in https://www.ietf.org/rfc/rfc4627.txt.
+         * Escapes the given string like stated in <a href="https://www.ietf.org/rfc/rfc4627.txt">...</a>.
          *
          * <p>This method escapes only the necessary characters '"', '\'. and '\u0000' - '\u001F'.
          * Compact escapes are not used (e.g., '\n' is escaped as "\u000a" and not as "\n").
@@ -811,7 +808,7 @@ public class Metrics {
          * @param value The value to escape.
          * @return The escaped value.
          */
-        private static String escape(String value) {
+        private static @NotNull String escape(@NotNull String value) {
             final StringBuilder builder = new StringBuilder();
             for (int i = 0; i < value.length(); i++) {
                 char c = value.charAt(i);

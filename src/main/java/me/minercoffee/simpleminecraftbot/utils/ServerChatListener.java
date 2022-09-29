@@ -1,9 +1,6 @@
 package me.minercoffee.simpleminecraftbot.utils;
 
 import me.minercoffee.simpleminecraftbot.Main;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,11 +9,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class ServerChatListener implements Listener {
     private final Main plugin;
@@ -25,11 +18,16 @@ public class ServerChatListener implements Listener {
         this.plugin = plugin;
         this.embles = embles;
     }
+    String onfistjoin = DataManager.getMessagesConfig().getString("discord-srv-messages.onfirstjoin");
+    String onjoin = DataManager.getMessagesConfig().getString("discord-srv-messages.onjoin");
+    String onquit = DataManager.getMessagesConfig().getString("discord-srv-messages.onquit");
+    String ondeath = DataManager.getMessagesConfig().getString("discord-srv-messages.ondeath");
+    String onadvancement = DataManager.getMessagesConfig().getString("discord-srv-messages.onadvancement");
     @EventHandler
     public void onFirstJoin(@NotNull PlayerJoinEvent e) {
         Player player = e.getPlayer();
         if (!player.hasPlayedBefore()) {
-           embles.SendFirstJoinmsg(player, player.getName() + " has join the game for the first time!");
+           embles.SendFirstJoinmsg(player, player.getName() + " " + onfistjoin);
         }
     }
     @EventHandler
@@ -41,17 +39,17 @@ public class ServerChatListener implements Listener {
     @EventHandler
     public void onJoin(@NotNull PlayerJoinEvent e){
         Player player = e.getPlayer();
-        embles.sendMessage(player, e.getPlayer().getName() + " joined the game.");
+        embles.sendMessage(player, e.getPlayer().getName() + " " + onjoin);
     }
     @EventHandler
     public void onQuit(@NotNull PlayerQuitEvent e){
         Player player = e.getPlayer();
-        embles.sendoffmsg(e.getPlayer(), player.getName() + " left the game.");
+        embles.sendoffmsg(e.getPlayer(), player.getName() + " " + onquit);
     }
     @EventHandler
     public void onDeath(@NotNull PlayerDeathEvent e){
         Player p = e.getEntity();
-        String deathMessage = e.getDeathMessage() == null ? p.getName() + " died." : e.getDeathMessage();
+        String deathMessage = e.getDeathMessage() == null ? p.getName() + " " + ondeath : e.getDeathMessage();
         embles.senddeathmsg(p, deathMessage);
     }
     @EventHandler
@@ -60,16 +58,6 @@ public class ServerChatListener implements Listener {
         String advancementKey  = e.getAdvancement().getKey().getKey();
         String display = plugin.advancementToDisplayMap.get(advancementKey);
         if (display == null ) return;
-        embles.sendadvancementmsg(player, player.getName() + " has made the advancement ["+ display + "]");
+        embles.sendadvancementmsg(player, player.getName() + " " + onadvancement + " " + "["+ display + "]");
     }
-/*
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (label.equalsIgnoreCase("item")) {
-            Player player = (Player) sender;
-            ItemStack item = player.getItemInUse();
-            embles.SendMsg(player, player.getName() + " >> " + " " + item + " ");
-        }
-        return false;
-    }*/
 }
