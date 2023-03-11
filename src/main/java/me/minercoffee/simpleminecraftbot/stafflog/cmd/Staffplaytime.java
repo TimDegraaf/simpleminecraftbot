@@ -4,6 +4,7 @@ import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.Embles;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.getStaffplaytimeConfig;
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.savestaffplaytime;
+import static org.bukkit.Bukkit.getOfflinePlayer;
 
 public class Staffplaytime implements TabExecutor {
     private final Embles embles;
@@ -24,19 +26,20 @@ public class Staffplaytime implements TabExecutor {
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        OfflinePlayer icon =  getOfflinePlayer("MinerCoffee97");
         if(!(sender instanceof Player player)){
             if (args[0].equalsIgnoreCase("report")) {
                 StringBuilder toSend = new StringBuilder();
                 try {
                     for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
-                        toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
+                        toSend.append("- **").append(getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                     }
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
                 plugin.playerLogListener.saveAllPlayers();
                 System.out.println(toSend);
-                embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+                embles.sendstaffonline(icon, "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
             }
             if (args[0].equalsIgnoreCase("reset")) {
                 for (String key : getStaffplaytimeConfig().getKeys(false)) {
@@ -51,14 +54,14 @@ public class Staffplaytime implements TabExecutor {
                     StringBuilder toSend = new StringBuilder();
                     try {
                         for (String uuid : getStaffplaytimeConfig().getKeys(false)) {
-                            toSend.append("- **").append(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
+                            toSend.append("- **").append(getOfflinePlayer(UUID.fromString(uuid)).getName()).append("** has played for **").append(plugin.convertTime(getStaffplaytimeConfig().getLong(uuid))).append("** this week\n");
                         }
                     } catch (IllegalArgumentException e) {
                         e.printStackTrace();
                     }
                     plugin.playerLogListener.saveAllPlayers();
                     System.out.println(toSend);
-                 embles.sendstaffonline(Bukkit.getOfflinePlayer("MinerCoffee97"), "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
+                 embles.sendstaffonline(icon, "**WEEKLY SUMMARY**\n" + toSend, false, Color.GRAY);
                 }
                 if (args[0].equalsIgnoreCase("reset")) {
                     for (String key : getStaffplaytimeConfig().getKeys(false)) {
@@ -73,7 +76,7 @@ public class Staffplaytime implements TabExecutor {
         return true;
     }
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String [] args) {
         if (args.length == 1) {
             ArrayList<String> subcommandsArguements = new ArrayList<>();
             subcommandsArguements.add("report");

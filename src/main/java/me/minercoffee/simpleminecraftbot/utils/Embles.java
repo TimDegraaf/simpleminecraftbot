@@ -4,7 +4,7 @@ import me.minercoffee.simpleminecraftbot.Main;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -189,7 +189,6 @@ public class Embles {
         ArrayList<Player> list = new ArrayList<>(plugin.getServer().getOnlinePlayers());
         for (Player player : list) {
             if (player.isOnline()){
-
                 i++;
             }
         }

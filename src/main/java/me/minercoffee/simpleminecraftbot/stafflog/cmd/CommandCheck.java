@@ -2,7 +2,6 @@ package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
-import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -11,9 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
-
 public class CommandCheck implements CommandExecutor {
     private final Main instance;
     public CommandCheck(Main instance){
@@ -21,7 +18,7 @@ public class CommandCheck implements CommandExecutor {
     }
     @SuppressWarnings("deprecation")
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String  [] args) {
         Player player = (Player) sender;
         if (args.length != 1) {
             player.sendMessage(ColorMsg.color("&cUsage: /staffcheck <player>"));

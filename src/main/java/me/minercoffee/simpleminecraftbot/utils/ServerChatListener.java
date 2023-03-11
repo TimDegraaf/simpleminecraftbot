@@ -49,7 +49,7 @@ public class ServerChatListener implements Listener {
     @EventHandler
     public void onDeath(@NotNull PlayerDeathEvent e){
         Player p = e.getEntity();
-        String deathMessage = e.getDeathMessage() == null ? p.getName() + " " + ondeath : e.getDeathMessage();
+        String deathMessage = (e.getDeathMessage() == null) ? (p.getName() + " " + ondeath) : e.getDeathMessage();
         embles.senddeathmsg(p, deathMessage);
     }
     @EventHandler

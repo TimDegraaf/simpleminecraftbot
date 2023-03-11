@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class UpdateCheckListener implements Listener {
     private final Main plugin;
-
     public UpdateCheckListener(Main plugin) {
         this.plugin = plugin;
     }

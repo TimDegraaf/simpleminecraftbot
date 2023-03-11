@@ -14,14 +14,13 @@ import java.util.List;
 public class UpdateCheckCommand implements CommandExecutor {
     @SuppressWarnings("deprecation")
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, String [] args) {
 
         // Check for updates and send result to the one who entered the command
         if(args.length == 0) {
             UpdateChecker.getInstance().checkNow(commandSender);
             return true;
         }
-
         if(args.length==1) {
 
             // Check for updates and send result to all players
@@ -29,14 +28,12 @@ public class UpdateCheckCommand implements CommandExecutor {
                 UpdateChecker.getInstance().checkNow(Bukkit.getOnlinePlayers().toArray(new Player[0]));
                 return true;
             }
-
             // Check for updates and send result to all players and console
             if(args[0].equalsIgnoreCase("all")) {
                 List<CommandSender> everyone = new ArrayList<>(Bukkit.getOnlinePlayers());
                 everyone.add(Bukkit.getConsoleSender());
                 UpdateChecker.getInstance().checkNow(everyone.toArray(new CommandSender[0]));
             }
-
         }
         commandSender.sendMessage("Usage: /updatechecker [players|all]");
         return true;

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Ping implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if (s.equalsIgnoreCase("ping")) {
             if (commandSender instanceof Player player) {
                 if (strings.length == 0) {

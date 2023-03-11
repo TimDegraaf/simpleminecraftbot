@@ -13,7 +13,8 @@ import java.awt.*;
 public class SetTicketCMD extends ListenerAdapter {
 
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        if (e.getMessage().getContentStripped().equalsIgnoreCase(Main.getPREFIX() + "setTicket")) {
+        String prefix =  Main.getPREFIX();
+        if (e.getMessage().getContentStripped().equalsIgnoreCase(prefix + "setTicket")) {
             EmbedBuilder embed = new EmbedBuilder();
             embed.setColor(Color.GREEN);
             embed.setTitle(DataManager.getMessagesConfig().getString("ticket-support-button.title"));

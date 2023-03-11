@@ -1,60 +1,59 @@
-package me.minercoffee.simpleminecraftbot.clearcmd;
+package me.minercoffee.simpleminecraftbot.betafeatures;
 
 import me.minercoffee.simpleminecraftbot.Main;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static me.minercoffee.simpleminecraftbot.Main.getInstance;
+
 public class Clear extends ListenerAdapter {
-    private final Main plugin;
-
-    public Clear(Main plugin) {
-        this.plugin = plugin;
+    public Clear() {
     }
-
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        try {
-            if (e.getAuthor().isBot()) return;
-            if (e.getMember() != null) return;
-            String[] args = e.getMessage().getContentRaw().split(" ");
-            String ownerRole = plugin.getConfig().getString("roles_owner_id");
-            String staffRole = plugin.getConfig().getString("roles_staff_id");
-            TextChannel commands = plugin.commandschannel;
-            String role = String.valueOf(Objects.requireNonNull(e.getMember()).getRoles());
-            if (ownerRole != null && (staffRole != null && role.contains(staffRole) || role != null && role.contains(ownerRole))) {
-                if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
-                    if (args.length <= 2) {
-                        sendErrorMessage(e.getChannel().asTextChannel(), e.getMember());
-                    } else {
-                        e.getMessage().delete().queue();
-                        TextChannel target = (TextChannel) e.getMessage().getMentions().getChannels().get(0);
-                        purgeMessages(target, Integer.parseInt(args[2]));
-                        if (args.length > 3) {
-                            StringBuilder reason = new StringBuilder();
-                            for (int i = 3; i < args.length; i++) {
-                                reason.append(args[i]).append(" ");
-                            }
-                            log(e.getMember(), args[2], reason.toString(), commands, target); //channel which the cmd can be executed.
-                        } else {
-                            log(e.getMember(), args[2], " ", commands, target);
-                        }
+        String[] args = e.getMessage().getContentRaw().split(" ");
+        if (e.getAuthor().isBot()) return;
+        String ownerRole = getInstance().getConfig().getString("roles_owner_id");
+        String staffRole = getInstance().getConfig().getString("roles_staff_id");
+        String role = String.valueOf((e.getMember()).getRoles());
+        assert staffRole != null;
+        boolean hasRoles = false;
+        if (ownerRole != null) {
+            hasRoles = role.contains(staffRole) || role.contains(ownerRole);
+        }
+        if (hasRoles) return;
+        if (args[0].equalsIgnoreCase(Main.getPREFIX() + "clear")) {
+            if (args.length <= 2) {
+                sendErrorMessage(e.getChannel().asTextChannel(), e.getMember());
+            } else {
+                e.getMessage().delete().queue();
+                TextChannel target = (TextChannel) e.getMessage().getMentions().getChannels().get(0);
+                purgeMessages(target, Integer.parseInt(args[2]));
+                TextChannel commands = getInstance().commandschannel;
+                if (args.length > 3) {
+                    System.out.println("testing 3");
+                    StringBuilder reason = new StringBuilder();
+                    for (int i = 3; i < args.length; i++) {
+                        reason.append(args[i]).append(" ");
                     }
+                    log(e.getMember(), args[2], reason.toString(), commands, target); //channel which the cmd can be executed.
+                } else {
+                    log(e.getMember(), args[2], " ", commands, target);
+                    System.out.println("testing 4");
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
     public void sendErrorMessage(TextChannel channel, Member member) {

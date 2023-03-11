@@ -10,6 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
@@ -18,12 +19,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.minercoffee.simpleminecraftbot.stafflog.cmd.HomeUtils.MainMenuGui;
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
 
-public class Homes implements TabExecutor {
-    private String homeName;
+public class Homes implements TabExecutor, Listener {
+    public static String homeName;
 
-    public Homes() {
+    public Homes () {
     }
 
     @Override
@@ -94,13 +96,14 @@ public class Homes implements TabExecutor {
                     p.sendMessage(ColorMsg.color("&cPlease provide a your" + " " + getDataConfig().getString("staff-homes-locations." + homeName + ".homename") + " " + "that you created."));
                     return true;
                 }
-                homeName = args[1];
+
 
                 if (args.length == 2 && args[0].equalsIgnoreCase("set")) {
+                    homeName = args[1];
                     PersistentDataContainer data = p.getPersistentDataContainer();
                     initializingStaffhomes(p);
                     int HomeCount = data.getOrDefault(new NamespacedKey(Main.getInstance(), "Staffhomes.limit"), PersistentDataType.INTEGER, 0);
-                    if (!p.hasPermission("simpleminecraftbot.staff") && !p.isOp()) {
+                    if (!checkPlayerperms(p)){
                         if (HomeCount == 0) {
                             if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
                                 if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
@@ -123,37 +126,37 @@ public class Homes implements TabExecutor {
                             }
                         }
                     } else if (HomeCount == 0) {
-                        if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
-                            if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
-                                p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("staffhome.override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
+                            if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
+                                if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
+                                    p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("staffhome.override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
+                                    savestaffLocation(p);
+                                }
+                            } else if (data.has(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER)) {
+                                data.set(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER, 1);
                                 savestaffLocation(p);
                             }
-                        } else if (data.has(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER)) {
-                            data.set(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER, 1);
-                            savestaffLocation(p);
-                        }
-                    } else if (HomeCount == 1) {
-                        if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
-                            if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
-                                p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("staffhome.override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
-                                updateLocation(p);
+                        } else if (HomeCount == 1) {
+                            if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
+                                if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
+                                    p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("staffhome.override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
+                                    updateLocation(p);
+                                }
+                            } else if (data.has(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER)) {
+                                data.set(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER, 2);
+                                savestaffLocation(p);
                             }
-                        } else if (data.has(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER)) {
-                            data.set(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER, 2);
-                            savestaffLocation(p);
-                        }
-                    } else if (HomeCount == 2) {
-                        if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
-                            if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
-                                p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("staffhome.override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
-                                updateLocation(p);
+                        } else if (HomeCount == 2) {
+                            if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
+                                if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
+                                    p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessagesConfig().getString("staffhome.override-message") + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".x")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".y")) + " " + Math.round(getDataConfig().getInt("staff-homes-locations." + homeName + ".z"))));
+                                    updateLocation(p);
+                                }
+                            } else {
+                                p.sendMessage(ColorMsg.color("&cYou can't create anymore homes."));
                             }
-                        } else {
-                            p.sendMessage(ColorMsg.color("&cYou can't create anymore homes."));
                         }
                     }
                 }
-            }
             if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
                 homeName = args[1];
                 if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
@@ -169,15 +172,29 @@ public class Homes implements TabExecutor {
                 }
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("list")) {
+                PersistentDataContainer data = p.getPersistentDataContainer();
+                String gethomeName = data.getOrDefault(new NamespacedKey(Main.getInstance(), "Staffhomes.limit"), PersistentDataType.STRING, homeName);
+
                 int current_home_x = getDataConfig().getInt("staff-homes-locations." + homeName + ".x");
                 int current_home_y = getDataConfig().getInt("staff-homes-locations." + homeName + ".y");
                 int current_home_z = getDataConfig().getInt("staff-homes-locations." + homeName + ".z");
-                System.out.println("testing");
-                p.sendMessage(ColorMsg.color(getMessagesConfig().getString("list-message") + getDataConfig().getString("staff-homes-locations." + homeName + ".homename") + " " + Math.round(current_home_x) + " " + Math.round(current_home_y) + " " + Math.round(current_home_z)));
-                p.sendMessage(ColorMsg.color("&cNo home found. &r&7Please try again."));
+                if (getDataConfig().isConfigurationSection("staff-homes-locations." + homeName)) {
+                    if (getDataConfig().getString("staff-homes-locations." + homeName + ".owner").equals(p.getName()) && (getDataConfig().getString("staff-homes-locations." + homeName + ".homename")).equals(homeName)) {
+                        p.sendMessage(ColorMsg.color(getMessagesConfig().getString("list-message") + getDataConfig().getString("staff-homes-locations." + gethomeName + ".homename") + " " + Math.round(current_home_x) + " " + Math.round(current_home_y) + " " + Math.round(current_home_z)));
+
+                    } else {
+                            p.sendMessage(ColorMsg.color("&cNo home found. &r&7Please try again."));
+                    }
+                }
+            }
+            if (args.length == 1 && args[0].equalsIgnoreCase("gui")) {
+                MainMenuGui(p);
             }
         }
         return true;
+    }
+    private boolean checkPlayerperms(@NotNull Player p) {
+        return p.hasPermission("simpleminecraftbot.staff") || p.isOp();
     }
     private void savestaffLocation(@NotNull Player p) {
         PersistentDataContainer data = p.getPersistentDataContainer();
@@ -245,7 +262,6 @@ public class Homes implements TabExecutor {
             data.set(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER, 0);
         }
     }
-
     private void RemoveLStaffHomesimits(@NotNull Player p){
         PersistentDataContainer data = p.getPersistentDataContainer();
         if (data.has(new NamespacedKey(Main.getInstance(), "StaffHomes.limit"), PersistentDataType.INTEGER)){
@@ -254,7 +270,7 @@ public class Homes implements TabExecutor {
     }
     @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String  [] args) {
         if (args.length == 1) {
             ArrayList<String> subcommandsArguements = new ArrayList<>();
             subcommandsArguements.add("set");
@@ -262,6 +278,7 @@ public class Homes implements TabExecutor {
             subcommandsArguements.add("return");
             subcommandsArguements.add("delete");
             subcommandsArguements.add("help");
+            subcommandsArguements.add("gui");
             return subcommandsArguements;
         }
         if (args.length == 2) {

@@ -3,7 +3,7 @@ package me.minercoffee.simpleminecraftbot;
 import com.jeff_media.updatechecker.UpdateCheckSource;
 import com.jeff_media.updatechecker.UpdateChecker;
 import com.jeff_media.updatechecker.UserAgentBuilder;
-import me.minercoffee.simpleminecraftbot.clearcmd.Clear;
+import me.minercoffee.simpleminecraftbot.betafeatures.Clear;
 import me.minercoffee.simpleminecraftbot.discord.BotCommands;
 import me.minercoffee.simpleminecraftbot.discord.ModalListeners;
 import me.minercoffee.simpleminecraftbot.stafflog.cmd.*;
@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -27,6 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
+import java.util.logging.Level;
 
 import static me.minercoffee.simpleminecraftbot.utils.Advancements.AdvancementsUpdater;
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
@@ -47,10 +49,10 @@ public final class Main extends JavaPlugin {
     public TextChannel ServerStatuschannel;
     public TextChannel ingamestaffchatchannel;
     public TextChannel commandschannel;
-    public static final String PREFIX = "!";
     public static Main getInstance() {
         return instance;
     }
+    public static String Prefix;
     @SuppressWarnings("deprecation")
     @Override
     public void onEnable() {
@@ -64,7 +66,11 @@ public final class Main extends JavaPlugin {
         DataUpdater();
         embles = new Embles(this);
         MessagesUpdater();
-        String botToken = "";
+        String botToken = "OTY2Nzg2NDU5OTM3OTY0MDYy.GvNPit.JTqvuvULrYYLo_LAMOliMSijvU_Xb2BCCQ2RMw";
+        Prefix = Main.getInstance().getConfig().getString("bot-prefix");
+        if (Prefix == null){
+            getInstance().getLogger().log(Level.WARNING, "The prefix is not set in the config.yml");
+        }
         try {
             ConfigUpdater();
             AdvancementsUpdater();
@@ -73,9 +79,6 @@ public final class Main extends JavaPlugin {
             String chatChannelId = getConfig().getString("ingame-chat");
             if (chatChannelId != null) {
                 chatChannel = jda.getTextChannelById(chatChannelId);
-            }
-            if (chatChannel == null || chatChannelId == null){
-                System.out.println("Please fill out the config.yml and restart the server.");
             }
             String ingamestaffchatid = getConfig().getString("staffchat");
             if (ingamestaffchatid != null){
@@ -102,11 +105,12 @@ public final class Main extends JavaPlugin {
             getCommand("staff").setExecutor(new PlayerLogListener(instance, embles));
             getServer().getPluginManager().registerEvents(new PlayerLogListener(instance, embles), this);
             getCommand("staffhome").setExecutor(new Homes());
+            getServer().getPluginManager().registerEvents(new HomeListener(), this);
             getServer().getPluginManager().registerEvents(new UpdateCheckListener(this), this);
             new DateCheckRunnable(this, embles).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
             new PlayerSaveTask().runTaskTimerAsynchronously(this, 0L, 60 * 20L);
             new DailySummaryTask(this, embles).runTaskTimerAsynchronously(this, 0L, 60L * 20L);
-            jda.addEventListener(new Clear(this), new BotCommands(), new ModalListeners());
+            jda.addEventListener(new Clear(), new BotCommands(), new ModalListeners(), new DiscordHomeCheck(this));
             jda.addEventListener(new ButtonListener(this));
             jda.addEventListener(new SetTicketCMD());
             jda.addEventListener(new DiscordListener());
@@ -122,13 +126,16 @@ public final class Main extends JavaPlugin {
             embles.ServerisOnline(Bukkit.getOfflinePlayer("MinerCoffee97"), "Server is online.", true, Color.RED);
             //advancement config getting the names.
             ConfigurationSection advancementMap = getadvancementsConfig().getConfigurationSection("advancementMap");
+            if (advancementMap == null){
+                getLogger().log(Level.WARNING, "Please regenerate the advancements.yml");
+            }
             if (advancementMap != null) {
                     for (String key : advancementMap.getKeys(false)) {
                         advancementToDisplayMap.put(key, advancementMap.getString(key));
                     }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ExceptionInInitializerError | InterruptedException | IllegalArgumentException e) {
+            getLogger().log(Level.SEVERE, "Please fill out the config.yml and restart the server. This plugin work not function property until the config.yml is completed.");
         }
     }
     public void ServerUtils(){
@@ -151,8 +158,7 @@ public final class Main extends JavaPlugin {
             }
             return map;
         }));
-        new UpdateChecker(this, UpdateCheckSource.CUSTOM_URL, "https://github.com/MinerCoffee/simpleminecraftbot/blob/master/src/main/resources/latestversion.txt")
-                .setDownloadLink("https://discord.com/channels/941600403513040916/941600403513040919")
+        new UpdateChecker(this, UpdateCheckSource.CUSTOM_URL, "https://github.com/TimDegraaf/simpleminecraftbot/blob/master/src/main/resources/latestversion.txt")
                 .setChangelogLink("https://discord.gg/5nDbUY2qFy")
                 .setDonationLink("https://www.paypal.com/paypalme/MinerCoffee")
                 .setNotifyOpsOnJoin(true)
@@ -189,7 +195,6 @@ public final class Main extends JavaPlugin {
     public void DataUpdater(){
         getDataConfig().addDefault("staff-homes-locations", "");
     }
-
     public void loadConfig(){
         getConfig().options().copyDefaults(true);
         instance.saveConfig();
@@ -205,7 +210,6 @@ public final class Main extends JavaPlugin {
             throw new RuntimeException(e);
         }
     }
-
     @Contract(pure = true)
     public @NotNull String convertTime(Long ms) {
         int seconds = (int) (ms / 1000) % 60;
@@ -224,10 +228,9 @@ public final class Main extends JavaPlugin {
             Bukkit.broadcastMessage(ChatColor.BOLD + "<" + member.getEffectiveName() + ">" + ChatColor.GRAY + " " + message);
         }
     }
-    public static String getPREFIX() {
-        return PREFIX;
+    public static @NotNull String getPREFIX() {
+        return Prefix;
     }
-
     public static HashMap<UUID, Long> getMap() {
         return map;
     }

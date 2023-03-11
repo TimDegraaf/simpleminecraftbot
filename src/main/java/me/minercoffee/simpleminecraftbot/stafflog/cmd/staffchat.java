@@ -1,11 +1,10 @@
 package me.minercoffee.simpleminecraftbot.stafflog.cmd;
 
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import me.minercoffee.simpleminecraftbot.Main;
 import me.minercoffee.simpleminecraftbot.utils.ColorMsg;
-import me.minercoffee.simpleminecraftbot.utils.DataManager;
 import me.minercoffee.simpleminecraftbot.utils.Embles;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.Bukkit;
@@ -17,7 +16,6 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +51,7 @@ public class staffchat extends ListenerAdapter implements TabExecutor {
         }
         for (Player staff : Bukkit.getOnlinePlayers()) {
             if (staff.hasPermission("simpleminecraftbot.staff") || staff.isOp()) {
-                staff.sendMessage(ColorMsg.color( messagesConfig.getString("staffchat.prefix") +  " &8>" + "&4" + staff.getName() + "&6: &b" + message));
+                staff.sendMessage(ColorMsg.color( messagesConfig.getString("staffchat.prefix") +  " &8>" + " " +"&4" + staff.getName() + "&6: &b" + message));
                 embles.sendStaffChatEmbled(staff, staff.getName() + " >> " + " " + message, Color.YELLOW);
             }
         }

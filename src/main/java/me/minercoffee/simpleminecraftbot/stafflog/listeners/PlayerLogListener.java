@@ -144,7 +144,7 @@ public class PlayerLogListener implements Listener, TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String [] args) {
         if (args.length == 1) {
             ArrayList<String> subcommandsArgument = new ArrayList<>();
             subcommandsArgument.add("on");

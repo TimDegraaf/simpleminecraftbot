@@ -10,10 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import static me.minercoffee.simpleminecraftbot.utils.DataManager.*;
 
 public class reloadcmd implements CommandExecutor {
-
     public reloadcmd(Main plugin) {
     }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = (Player) sender;

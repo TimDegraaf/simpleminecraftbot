@@ -6,6 +6,9 @@ staffhome:
   return-message: '&aReturned to former location.'
   list-message: '&l&7Here are your homes: '
   delete-message: '&c&lHome Deleted!'
+  gui-main-menu-title: '&l&3Test'
+  gui-main-menu-size: 9
+  gui-second-menu-title: '&l&4Test'
 staffchat:
   prefix: '&7[&c&lStaff&7]'
 tickets:

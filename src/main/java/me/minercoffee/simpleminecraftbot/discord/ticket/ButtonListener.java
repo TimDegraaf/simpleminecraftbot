@@ -3,10 +3,9 @@ package me.minercoffee.simpleminecraftbot.discord.ticket;
 import me.minercoffee.simpleminecraftbot.Main;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.PermissionOverride;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -65,7 +64,7 @@ public class ButtonListener extends ListenerAdapter {
                         if (Catorgory_ID == 0L) {
                             return;
                         }
-                        guild.getTextChannelById(Catorgory_ID).sendMessageEmbeds(embedTeam.build()).queue(); //TODO fix null with Catorgory id
+                        Objects.requireNonNull(guild.getTextChannelById(Catorgory_ID)).sendMessageEmbeds(embedTeam.build()).queue(); //TODO fix null with Catorgory id
                     }
                 }
                 if (ownerRole != null && role.contains(ownerRole)) {

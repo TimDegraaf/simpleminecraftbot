@@ -30,7 +30,6 @@ public class Discordhelp extends ListenerAdapter {
             }
         }
     }
-
     private @NotNull StringBuilder getHelpMessage() {
         StringBuilder sb = new StringBuilder();
         sb.append("`-staffcheck` | `Returns the total playtime for the specified staff member for the current week.`\n");
